@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game & Live Chat Platform</title>
+    <title>CV999 Gaming Portal</title>
     <style>
         * {
             box-sizing: border-box;
@@ -15,68 +15,92 @@
         body {
             background-color: #0f172a;
             color: #f8fafc;
-            padding-bottom: 70px;
+            padding-bottom: 75px;
+            overflow-x: hidden;
         }
 
-        /* Top Header */
+        /* Glassmorphism Header */
         header {
-            background-color: #1e293b;
+            background: rgba(30, 41, 59, 0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             padding: 15px;
             text-align: center;
-            font-size: 1.2rem;
+            font-size: 1.25rem;
             font-weight: bold;
-            border-bottom: 2px solid #334155;
+            color: #38bdf8;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             position: sticky;
             top: 0;
             z-index: 100;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
         }
 
         .container {
             padding: 15px;
-            max-width: 600px;
+            max-width: 500px;
             margin: 0 auto;
         }
 
-        /* Screen Sections */
+        /* Screen Routing */
         .screen {
             display: none;
+            animation: fadeIn 0.3s ease-in-out;
         }
 
         .screen.active {
             display: block;
         }
 
-        /* Auth Forms */
-        .auth-card, .card {
-            background-color: #1e293b;
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
+        /* Glassmorphism Cards */
+        .card, .auth-card {
+            background: rgba(30, 41, 59, 0.65);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* Form Controls */
         input, button, select {
             width: 100%;
-            padding: 12px;
+            padding: 12px 14px;
             margin: 8px 0;
-            border-radius: 8px;
+            border-radius: 10px;
             border: 1px solid #334155;
             background-color: #0f172a;
             color: #fff;
-            font-size: 1rem;
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        input:focus, select:focus {
+            border-color: #38bdf8;
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.3);
         }
 
         button {
-            background-color: #2563eb;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
             color: white;
             border: none;
             cursor: pointer;
             font-weight: bold;
-            transition: background 0.2s;
+            margin-top: 12px;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
         }
 
-        button:hover {
-            background-color: #1d4ed8;
+        button:active {
+            transform: scale(0.98);
         }
 
         /* Game Grid */
@@ -84,81 +108,102 @@
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 12px;
+            margin-top: 10px;
         }
 
         .game-card {
-            background-color: #1e293b;
-            border-radius: 10px;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 12px;
             overflow: hidden;
             text-align: center;
             padding: 10px;
-            border: 1px solid #334155;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: transform 0.2s;
+        }
+
+        .game-card:hover {
+            transform: translateY(-3px);
         }
 
         .game-card img {
             width: 100%;
-            height: 100px;
+            height: 105px;
             object-fit: cover;
-            border-radius: 6px;
+            border-radius: 8px;
+            margin-bottom: 8px;
         }
 
-        /* Profile & Avatar */
+        .game-card h4 {
+            font-size: 0.9rem;
+            color: #e2e8f0;
+        }
+
+        /* Avatar & Profile */
         .avatar-box {
             text-align: center;
             margin-bottom: 15px;
         }
 
         .avatar-img {
-            width: 90px;
-            height: 90px;
+            width: 95px;
+            height: 95px;
             border-radius: 50%;
-            border: 3px solid #2563eb;
+            border: 3px solid #38bdf8;
             object-fit: cover;
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
         }
 
-        /* Chat System */
+        /* Chat Window */
         .chat-box {
-            height: 300px;
+            height: 320px;
             overflow-y: auto;
             border: 1px solid #334155;
-            padding: 10px;
-            border-radius: 8px;
-            background-color: #0f172a;
-            margin-bottom: 10px;
+            padding: 12px;
+            border-radius: 10px;
+            background-color: #090d16;
+            margin-bottom: 12px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 10px;
         }
 
         .chat-msg {
             max-width: 80%;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 0.9rem;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            line-height: 1.4;
+            word-break: break-word;
         }
 
         .chat-msg.user {
             background-color: #2563eb;
+            color: #fff;
             align-self: flex-end;
+            border-bottom-right-radius: 2px;
         }
 
         .chat-msg.admin {
             background-color: #334155;
+            color: #f1f5f9;
             align-self: flex-start;
+            border-bottom-left-radius: 2px;
         }
 
-        /* Bottom Navigation Bar */
+        /* Glassmorphism Bottom Navigation */
         .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            height: 60px;
-            background-color: #1e293b;
+            height: 65px;
+            background: rgba(30, 41, 59, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             display: flex;
             justify-content: space-around;
             align-items: center;
-            border-top: 1px solid #334155;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
             z-index: 1000;
         }
 
@@ -166,77 +211,148 @@
             color: #94a3b8;
             background: none;
             border: none;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 2px;
+            gap: 3px;
             padding: 0;
+            margin: 0;
+            box-shadow: none;
+            cursor: pointer;
+        }
+
+        .nav-item span:first-child {
+            font-size: 1.25rem;
         }
 
         .nav-item.active {
             color: #38bdf8;
+            font-weight: bold;
+        }
+
+        /* Config Modal Overlay */
+        #config-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-card {
+            background: #1e293b;
+            padding: 25px;
+            border-radius: 16px;
+            max-width: 450px;
+            width: 100%;
+            border: 1px solid #38bdf8;
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.2);
         }
     </style>
 </head>
 <body>
 
-    <header id="top-header">গেমিং পোর্টাল</header>
+    <!-- Firebase Config Setup Modal (মডেল পপআপ) -->
+    <div id="config-modal">
+        <div class="modal-card">
+            <h3 style="color: #38bdf8; margin-bottom: 10px;">Firebase Config পেস্ট করুন</h3>
+            <p style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 12px;">
+                আপনার ফায়ারবেস কনসোল থেকে প্রাপ্ত <b>firebaseConfig</b> অবজেক্ট বা পুরো জেসন টেক্সটটি নিচে পেস্ট করে ওকে চাপুন।
+            </p>
+            <textarea id="config-input" rows="8" placeholder='const firebaseConfig = {
+  apiKey: "...",
+  authDomain: "...",
+  databaseURL: "...",
+  projectId: "...",
+  storageBucket: "...",
+  messagingSenderId: "...",
+  appId: "..."
+};' style="width:100%; background:#0f172a; color:#fff; padding:10px; border-radius:8px; border:1px solid #334155; font-family:monospace; font-size:0.8rem;"></textarea>
+            <button onclick="saveUserConfig()" style="background: #10b981;">সেভ করে অ্যাপ চালু করুন</button>
+        </div>
+    </div>
+
+    <header id="top-header">CV999 GAMING PORTAL</header>
 
     <div class="container">
         
         <!-- ১. অথেনটিকেশন স্ক্রিন -->
         <div id="auth-screen" class="screen active">
             <div class="auth-card">
-                <h3>লগইন / সাইনআপ</h3>
-                <input type="email" id="auth-email" placeholder="ইমেইল দিন">
-                <input type="password" id="auth-password" placeholder="পাসওয়ার্ড দিন">
-                <button onclick="handleAuth()">লগইন / একাউন্ট খুলুন</button>
+                <h3 style="text-align: center; margin-bottom: 15px; color: #38bdf8;">লগইন / অ্যাকাউন্ট খুলুন</h3>
+                <label style="font-size: 0.8rem; color: #cbd5e1;">ইমেইল এড্রেস</label>
+                <input type="email" id="auth-email" placeholder="example@gmail.com">
+                
+                <label style="font-size: 0.8rem; color: #cbd5e1;">পাসওয়ার্ড</label>
+                <input type="password" id="auth-password" placeholder="******">
+                
+                <button onclick="handleAuth()">প্রবেশ করুন / সাইনআপ</button>
+                <p style="text-align: center; font-size: 0.75rem; color: #64748b; margin-top: 10px;">
+                    * অ্যাকাউন্ট না থাকলে স্বয়ংক্রিয়ভাবে তৈরি হয়ে যাবে
+                </p>
             </div>
         </div>
 
-        <!-- ২. হোম স্ক্রিন -->
+        <!-- ২. হোম স্ক্রিন (গেম লিস্ট) -->
         <div id="home-screen" class="screen">
-            <h3>উপলব্ধ গেমসমূহ</h3>
-            <p style="margin-bottom: 10px; font-size: 0.9rem; color: #94a3b8;">প্রফিট রেট: <span id="current-profit-rate">1.8x</span></p>
+            <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px;">
+                <span style="font-size: 0.9rem;">গেম ওডস / প্রফিট রেট:</span>
+                <span id="current-profit-rate" style="font-weight: bold; color: #10b981; font-size: 1.1rem;">1.8x</span>
+            </div>
+            <h3 style="margin: 10px 0; font-size: 1.05rem; color: #cbd5e1;">উপলব্ধ গেমসমূহ</h3>
             <div class="game-grid" id="game-list">
-                <!-- ডায়নামিক গেম লোড হবে -->
+                <!-- ডায়নামিকভাবে ফায়ারবেস থেকে গেম লোড হবে -->
             </div>
         </div>
 
         <!-- ৩. প্রমোশন স্ক্রিন -->
         <div id="promo-screen" class="screen">
             <div class="card">
-                <h3>বিশেষ অফার ও প্রমোশন</h3>
-                <p style="margin-top: 10px; color: #cbd5e1;">প্রতিটি ডিপোজিটে পান ২০% বোনাস! অফারটি সীমিত সময়ের জন্য।</p>
+                <h3 style="color: #f59e0b; margin-bottom: 8px;">🎁 বিশেষ বোনাস অফার</h3>
+                <p style="font-size: 0.9rem; color: #cbd5e1; line-height: 1.5;">
+                    প্রতিটি ডিপোজিটে পাচ্ছেন ২০% ইন্সট্যান্ট ক্যাশব্যাক বোনাস! এই অফারটি উপভোগ করতে সরাসরি আমাদের লাইভ চ্যাটে যোগাযোগ করুন।
+                </p>
             </div>
         </div>
 
         <!-- ৪. লাইভ চ্যাট সাপোর্ট স্ক্রিন -->
         <div id="chat-screen" class="screen">
             <div class="card">
-                <h3>লাইভ চ্যাট সাপোর্ট</h3>
+                <h3 style="margin-bottom: 10px; font-size: 1rem; color: #38bdf8;">💬 ২৪/৭ লাইভ সাপোর্ট</h3>
                 <div class="chat-box" id="chat-messages">
-                    <div class="chat-msg admin">হ্যালো! আপনাকে কীভাবে সাহায্য করতে পারি?</div>
+                    <div class="chat-msg admin">হ্যালো! CV999 সাপোর্ট টিম থেকে আপনাকে স্বাগতম। কীভাবে সাহায্য করতে পারি?</div>
                 </div>
-                <div style="display: flex; gap: 5px;">
+                <div style="display: flex; gap: 6px;">
                     <input type="text" id="chat-input" placeholder="মেসেজ লিখুন..." style="margin: 0;">
-                    <button onclick="sendChatMessage()" style="width: 80px; margin: 0;">পাঠান</button>
+                    <button onclick="sendChatMessage()" style="width: 85px; margin: 0; padding: 0;">পাঠান</button>
                 </div>
             </div>
         </div>
 
-        <!-- ৫. ইউজার প্রোফাইল স্ক্রিন -->
+        <!-- ৫. ইউজার প্রোফাইল ও কাস্টম অ্যাভাটার -->
         <div id="profile-screen" class="screen">
             <div class="card">
                 <div class="avatar-box">
-                    <img id="avatar-preview" class="avatar-img" src="https://via.placeholder.com/90" alt="Avatar">
+                    <img id="avatar-preview" class="avatar-img" src="https://via.placeholder.com/95" alt="Avatar">
                     <input type="file" id="avatar-input" accept="image/*" style="display: none;" onchange="updateAvatar(event)">
-                    <button onclick="document.getElementById('avatar-input').click()" style="margin-top: 10px;">আইকন পরিবর্তন করুন</button>
+                    <br>
+                    <button onclick="document.getElementById('avatar-input').click()" style="width: auto; padding: 8px 16px; margin-top: 12px; font-size: 0.85rem;">
+                        🖼️ কাস্টম ছবি সেট করুন
+                    </button>
                 </div>
-                <p><strong>ইমেইল:</strong> <span id="user-email-display">-</span></p>
-                <p><strong>ইউজার আইডি:</strong> <span id="user-id-display">-</span></p>
-                <button onclick="logout()" style="background-color: #ef4444; margin-top: 15px;">লগআউট</button>
+                <div style="font-size: 0.9rem; border-top: 1px solid #334155; padding-top: 12px; margin-top: 10px;">
+                    <p style="margin-bottom: 8px;"><strong>ইমেইল:</strong> <span id="user-email-display" style="color: #38bdf8;">-</span></p>
+                    <p style="margin-bottom: 8px;"><strong>ইউজার আইডি:</strong> <span id="user-id-display" style="color: #94a3b8; font-size: 0.8rem;">-</span></p>
+                </div>
+                <button onclick="logout()" style="background: linear-gradient(135deg, #ef4444, #dc2626); margin-top: 15px;">লগআউট করুন</button>
             </div>
         </div>
 
@@ -254,7 +370,7 @@
         </button>
         <button class="nav-item" onclick="switchTab('chat-screen', this)">
             <span>💬</span>
-            <span>লাইভ চ্যাট</span>
+            <span>চ্যাট</span>
         </button>
         <button class="nav-item" onclick="switchTab('profile-screen', this)">
             <span>👤</span>
@@ -266,26 +382,53 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
-        // ⚠️ আপনার Firebase Console থেকে সংগৃহীত আসল কী দিয়ে নিচের অংশটুকু পরিবর্তন করবেন
-        const firebaseConfig = {
-            apiKey: "YOUR_REAL_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
+        let auth, db;
+
+        // চেক করা স্থানীয় লোকাল স্টোরেজে আগের কনফিগ আছে কি না
+        const savedConfig = localStorage.getItem('cv999_firebase_config');
+        if (savedConfig) {
+            document.getElementById('config-modal').style.display = 'none';
+            initFirebase(JSON.parse(savedConfig));
+        }
+
+        window.saveUserConfig = () => {
+            const rawText = document.getElementById('config-input').value;
+            try {
+                // এক্সট্র্যাক্ট অবজেক্ট ফ্রম ইনপুট টেক্সট
+                const jsonMatch = rawText.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) throw new Error("সঠিক কনফিগারেশন ফরম্যাট পাওয়া যায়নি");
+                
+                // Converting JS Object string to standard JSON format
+                let jsonString = jsonMatch[0]
+                    .replace(/(['"])?([a-zA-Z0-9_]+)(['"])?:/g, '"$2":')
+                    .replace(/'/g, '"');
+
+                const parsedConfig = JSON.parse(jsonString);
+                localStorage.setItem('cv999_firebase_config', JSON.stringify(parsedConfig));
+                document.getElementById('config-modal').style.display = 'none';
+                initFirebase(parsedConfig);
+            } catch (err) {
+                alert("কনফিগারেশন সেভ করা যায়নি! অনুগ্রহ করে ফায়ারবেস থেকে সঠিক কোড পেস্ট করুন।\nএরর: " + err.message);
+            }
         };
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getDatabase(app);
+        function initFirebase(config) {
+            try {
+                const app = initializeApp(config);
+                auth = getAuth(app);
+                db = getDatabase(app);
+                setupAuthObserver();
+            } catch (e) {
+                alert("Firebase Initialization Error: " + e.message);
+                localStorage.removeItem('cv999_firebase_config');
+                location.reload();
+            }
+        }
 
-        // Global Functions Exposure
         window.handleAuth = async () => {
+            if(!auth) return alert('ফায়ারবেস কানেক্ট হয়নি');
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
             if(!email || !password) return alert('ইমেইল ও পাসওয়ার্ড সঠিকভাবে দিন');
@@ -293,19 +436,18 @@
             try {
                 await signInWithEmailAndPassword(auth, email, password);
             } catch (error) {
-                if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-                    try {
-                        await createUserWithEmailAndPassword(auth, email, password);
-                    } catch (err) {
-                        alert('অ্যাকাউন্ট তৈরি করা যায়নি: ' + err.message);
-                    }
-                } else {
-                    alert('অথেনটিকেশন ব্যর্থ হয়েছে: ' + error.message);
+                // একাউন্ট না থাকলে অটো সাইনআপ করা হবে
+                try {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                } catch (err) {
+                    alert('অথেনটিকেশন ব্যর্থ হয়েছে: ' + err.message);
                 }
             }
         };
 
-        window.logout = () => signOut(auth);
+        window.logout = () => {
+            if(auth) signOut(auth);
+        };
 
         window.switchTab = (screenId, btnElement) => {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -319,7 +461,11 @@
             if(file) {
                 const reader = new FileReader();
                 reader.onload = function(event) {
-                    document.getElementById('avatar-preview').src = event.target.result;
+                    const imgData = event.target.result;
+                    document.getElementById('avatar-preview').src = imgData;
+                    if(auth && auth.currentUser) {
+                        set(ref(db, 'users/' + auth.currentUser.uid + '/avatar'), imgData);
+                    }
                 };
                 reader.readAsDataURL(file);
             }
@@ -328,16 +474,8 @@
         window.sendChatMessage = () => {
             const input = document.getElementById('chat-input');
             const msg = input.value.trim();
-            if(!msg || !auth.currentUser) return;
+            if(!msg || !auth || !auth.currentUser) return;
 
-            const chatBox = document.getElementById('chat-messages');
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'chat-msg user';
-            msgDiv.innerText = msg;
-            chatBox.appendChild(msgDiv);
-            chatBox.scrollTop = chatBox.scrollHeight;
-
-            // Save to Firebase Realtime Database
             push(ref(db, 'chats/' + auth.currentUser.uid), {
                 sender: 'user',
                 text: msg,
@@ -347,29 +485,70 @@
             input.value = '';
         };
 
-        // Auth State Observer
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById('auth-screen').classList.remove('active');
-                document.getElementById('main-nav').style.display = 'flex';
-                document.getElementById('home-screen').classList.add('active');
-                
-                document.getElementById('user-email-display').innerText = user.email;
-                document.getElementById('user-id-display').innerText = user.uid;
+        function setupAuthObserver() {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    document.getElementById('auth-screen').classList.remove('active');
+                    document.getElementById('main-nav').style.display = 'flex';
+                    document.getElementById('home-screen').classList.add('active');
+                    
+                    document.getElementById('user-email-display').innerText = user.email;
+                    document.getElementById('user-id-display').innerText = user.uid;
 
-                // Load Settings from Admin Control in Realtime
-                onValue(ref(db, 'settings/gameControl'), (snapshot) => {
-                    const data = snapshot.val();
-                    if(data && data.profitRate) {
-                        document.getElementById('current-profit-rate').innerText = data.profitRate + 'x';
-                    }
-                });
-            } else {
-                document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-                document.getElementById('auth-screen').classList.add('active');
-                document.getElementById('main-nav').style.display = 'none';
-            }
-        });
+                    // ১. ইউজার কাস্টম অ্যাভাটার লোড
+                    onValue(ref(db, 'users/' + user.uid + '/avatar'), (snapshot) => {
+                        if(snapshot.exists()) {
+                            document.getElementById('avatar-preview').src = snapshot.val();
+                        }
+                    });
+
+                    // ২. প্রফিট রেট লাইভ সিঙ্ক
+                    onValue(ref(db, 'settings/gameControl'), (snapshot) => {
+                        const data = snapshot.val();
+                        if(data && data.profitRate) {
+                            document.getElementById('current-profit-rate').innerText = data.profitRate + 'x';
+                        }
+                    });
+
+                    // ৩. লাইভ চ্যাট মেসেজ সিঙ্ক
+                    onValue(ref(db, 'chats/' + user.uid), (snapshot) => {
+                        const chatBox = document.getElementById('chat-messages');
+                        chatBox.innerHTML = '<div class="chat-msg admin">হ্যালো! CV999 সাপোর্ট টিম থেকে আপনাকে স্বাগতম। কীভাবে সাহায্য করতে পারি?</div>';
+                        
+                        snapshot.forEach((childSnapshot) => {
+                            const data = childSnapshot.val();
+                            const msgDiv = document.createElement('div');
+                            msgDiv.className = 'chat-msg ' + (data.sender === 'user' ? 'user' : 'admin');
+                            msgDiv.innerText = data.text;
+                            chatBox.appendChild(msgDiv);
+                        });
+                        chatBox.scrollTop = chatBox.scrollHeight;
+                    });
+
+                    // ৪. গেম লিস্ট সিঙ্ক
+                    onValue(ref(db, 'games'), (snapshot) => {
+                        const gameList = document.getElementById('game-list');
+                        gameList.innerHTML = '';
+                        if(snapshot.exists()) {
+                            snapshot.forEach((childSnapshot) => {
+                                const game = childSnapshot.val();
+                                const card = document.createElement('div');
+                                card.className = 'game-card';
+                                card.innerHTML = `<img src="${game.thumb}" alt="${game.title}"><h4>${game.title}</h4>`;
+                                gameList.appendChild(card);
+                            });
+                        } else {
+                            gameList.innerHTML = '<p style="grid-column: span 2; text-align:center; font-size:0.85rem; color:#64748b;">কোনো গেম যুক্ত করা হয়নি</p>';
+                        }
+                    });
+
+                } else {
+                    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+                    document.getElementById('auth-screen').classList.add('active');
+                    document.getElementById('main-nav').style.display = 'none';
+                }
+            });
+        }
     </script>
 </body>
 </html>
