@@ -185,6 +185,7 @@
 
     <div class="container">
         
+        <!-- ১. অথেনটিকেশন স্ক্রিন -->
         <div id="auth-screen" class="screen active">
             <div class="auth-card">
                 <h3>লগইন / সাইনআপ</h3>
@@ -194,13 +195,16 @@
             </div>
         </div>
 
+        <!-- ২. হোম স্ক্রিন -->
         <div id="home-screen" class="screen">
             <h3>উপলব্ধ গেমসমূহ</h3>
             <p style="margin-bottom: 10px; font-size: 0.9rem; color: #94a3b8;">প্রফিট রেট: <span id="current-profit-rate">1.8x</span></p>
             <div class="game-grid" id="game-list">
-                </div>
+                <!-- ডায়নামিক গেম লোড হবে -->
+            </div>
         </div>
 
+        <!-- ৩. প্রমোশন স্ক্রিন -->
         <div id="promo-screen" class="screen">
             <div class="card">
                 <h3>বিশেষ অফার ও প্রমোশন</h3>
@@ -208,6 +212,7 @@
             </div>
         </div>
 
+        <!-- ৪. লাইভ চ্যাট সাপোর্ট স্ক্রিন -->
         <div id="chat-screen" class="screen">
             <div class="card">
                 <h3>লাইভ চ্যাট সাপোর্ট</h3>
@@ -221,6 +226,7 @@
             </div>
         </div>
 
+        <!-- ৫. ইউজার প্রোফাইল স্ক্রিন -->
         <div id="profile-screen" class="screen">
             <div class="card">
                 <div class="avatar-box">
@@ -234,30 +240,9 @@
             </div>
         </div>
 
-        <div id="admin-screen" class="screen">
-            <div class="card">
-                <h3>এডমিন কন্ট্রোল প্যানেল</h3>
-                
-                <h4 style="margin-top: 15px;">নতুন গেম আপলোড</h4>
-                <input type="text" id="new-game-title" placeholder="গেমের নাম">
-                <input type="text" id="new-game-img" placeholder="ইমেজ ইউআরএল (Image URL)">
-                <button onclick="addNewGame()">গেম যোগ করুন</button>
-
-                <h4 style="margin-top: 20px;">প্রফিট রেট & রেজাল্ট কন্ট্রোল</h4>
-                <label style="font-size: 0.85rem; color: #cbd5e1;">প্রফিট রেট (Odds Multiply):</label>
-                <input type="number" id="profit-rate-input" step="0.1" value="1.8">
-                
-                <label style="font-size: 0.85rem; color: #cbd5e1;">ডিফল্ট রেজাল্ট মোড:</label>
-                <select id="win-loss-control">
-                    <option value="win">Win Profit Mode</option>
-                    <option value="loss">Loss Mode</option>
-                </select>
-                <button onclick="saveAdminSettings()" style="background-color: #10b981;">সেটিংস সেভ করুন</button>
-            </div>
-        </div>
-
     </div>
 
+    <!-- বটম নেভিগেশন বার -->
     <nav class="bottom-nav" id="main-nav" style="display: none;">
         <button class="nav-item active" onclick="switchTab('home-screen', this)">
             <span>🏠</span>
@@ -277,18 +262,19 @@
         </button>
     </nav>
 
+    <!-- Firebase v9 Modular SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
-        import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
-        // TODO: আপনার আসল ফায়ারবেস কনফিগারেশন কী দিয়ে এই অবজেক্টটি রিপ্লেস করবেন
+        // ⚠️ আপনার Firebase Console থেকে সংগৃহীত আসল কী দিয়ে নিচের অংশটুকু পরিবর্তন করবেন
         const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-            projectId: "YOUR_PROJECT",
-            storageBucket: "YOUR_PROJECT.appspot.com",
+            apiKey: "YOUR_REAL_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
             messagingSenderId: "YOUR_SENDER_ID",
             appId: "YOUR_APP_ID"
         };
@@ -298,7 +284,7 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        // Global Variables & Functions Exposure
+        // Global Functions Exposure
         window.handleAuth = async () => {
             const email = document.getElementById('auth-email').value;
             const password = document.getElementById('auth-password').value;
@@ -307,11 +293,14 @@
             try {
                 await signInWithEmailAndPassword(auth, email, password);
             } catch (error) {
-                // অ্যাকাউন্ট না থাকলে অটো সাইনআপ করবে
-                try {
-                    await createUserWithEmailAndPassword(auth, email, password);
-                } catch (err) {
-                    alert('অথেনটিকেশন ব্যর্থ হয়েছে: ' + err.message);
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+                    try {
+                        await createUserWithEmailAndPassword(auth, email, password);
+                    } catch (err) {
+                        alert('অ্যাকাউন্ট তৈরি করা যায়নি: ' + err.message);
+                    }
+                } else {
+                    alert('অথেনটিকেশন ব্যর্থ হয়েছে: ' + error.message);
                 }
             }
         };
@@ -331,7 +320,6 @@
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     document.getElementById('avatar-preview').src = event.target.result;
-                    // ফায়ারবেস স্টোরেজে সেভ করার লজিক এখানে ইনটিগ্রেট করা যাবে
                 };
                 reader.readAsDataURL(file);
             }
@@ -340,7 +328,7 @@
         window.sendChatMessage = () => {
             const input = document.getElementById('chat-input');
             const msg = input.value.trim();
-            if(!msg) return;
+            if(!msg || !auth.currentUser) return;
 
             const chatBox = document.getElementById('chat-messages');
             const msgDiv = document.createElement('div');
@@ -349,31 +337,14 @@
             chatBox.appendChild(msgDiv);
             chatBox.scrollTop = chatBox.scrollHeight;
 
+            // Save to Firebase Realtime Database
+            push(ref(db, 'chats/' + auth.currentUser.uid), {
+                sender: 'user',
+                text: msg,
+                timestamp: Date.now()
+            });
+
             input.value = '';
-            // ফায়ারবেস রিয়েলটাইম ডাটাবেসে পাঠানোর কোড:
-            // push(ref(db, 'chats/' + auth.currentUser.uid), { sender: 'user', text: msg });
-        };
-
-        window.addNewGame = () => {
-            const title = document.getElementById('new-game-title').value;
-            const img = document.getElementById('new-game-img').value;
-            if(!title || !img) return alert('গেমের নাম ও ইমেজ ইউআরএল দিন');
-
-            const gameList = document.getElementById('game-list');
-            const card = document.createElement('div');
-            card.className = 'game-card';
-            card.innerHTML = `<img src="${img}" alt="${title}"><h4>${title}</h4>`;
-            gameList.appendChild(card);
-
-            document.getElementById('new-game-title').value = '';
-            document.getElementById('new-game-img').value = '';
-            alert('গেম সফলভাবে যোগ হয়েছে!');
-        };
-
-        window.saveAdminSettings = () => {
-            const rate = document.getElementById('profit-rate-input').value;
-            document.getElementById('current-profit-rate').innerText = rate + 'x';
-            alert('এডমিন সেটিংস আপডেট করা হয়েছে!');
         };
 
         // Auth State Observer
@@ -385,6 +356,14 @@
                 
                 document.getElementById('user-email-display').innerText = user.email;
                 document.getElementById('user-id-display').innerText = user.uid;
+
+                // Load Settings from Admin Control in Realtime
+                onValue(ref(db, 'settings/gameControl'), (snapshot) => {
+                    const data = snapshot.val();
+                    if(data && data.profitRate) {
+                        document.getElementById('current-profit-rate').innerText = data.profitRate + 'x';
+                    }
+                });
             } else {
                 document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
                 document.getElementById('auth-screen').classList.add('active');
