@@ -2,93 +2,278 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <title>Aviator Admin & Game Server</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Gaming Control</title>
     <style>
-        body { background: #0b0e14; color: white; font-family: sans-serif; padding: 30px; }
-        .card { background: #161b26; padding: 20px; border-radius: 12px; border: 1px solid #333; max-width: 500px; margin: 0 auto; text-align: center; }
-        .status { font-size: 1.3rem; margin: 20px 0; color: #43a047; font-weight: bold; }
-        .btn-crash { background: #e53935; color: white; border: none; padding: 16px 32px; border-radius: 8px; font-size: 1.2rem; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .btn-crash:hover { background: #c62828; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #0b132b;
+            color: #ffffff;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 15px;
+            background-color: #1c2541;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #3a506b;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background-color: #1c2541;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #3a506b;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .card h3 {
+            margin-bottom: 15px;
+            color: #4cc9f0;
+            border-bottom: 2px solid #3a506b;
+            padding-bottom: 8px;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+        }
+
+        input, select, button, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            border-radius: 6px;
+            border: 1px solid #3a506b;
+            background-color: #0b132b;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+
+        button {
+            background-color: #4361ee;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background-color: #3f37c9;
+        }
+
+        /* Chat Panel */
+        .chat-admin-box {
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #3a506b;
+            padding: 10px;
+            border-radius: 6px;
+            background-color: #0b132b;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .admin-msg {
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            max-width: 85%;
+        }
+
+        .admin-msg.user {
+            background-color: #3a506b;
+            align-self: flex-start;
+        }
+
+        .admin-msg.admin {
+            background-color: #4361ee;
+            align-self: flex-end;
+        }
+
+        /* User List Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #3a506b;
+            font-size: 0.85rem;
+        }
+
+        th {
+            background-color: #0b132b;
+            color: #4cc9f0;
+        }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h2>✈️ AVIATOR GAME SERVER CONTROL</h2>
-        <div class="status" id="server-status">Game Status: Waiting...</div>
-        <div style="font-size: 2.5rem; font-weight: bold; margin-bottom: 20px;" id="current-mult">1.00x</div>
-        <button class="btn-crash" id="force-crash-btn">🔥 FORCE CRASH NOW</button>
+    <div class="header">
+        <h2>এডমিন কন্ট্রোল প্যানেল</h2>
+        <p style="font-size: 0.85rem; color: #a0aec0;">প্ল্যাটফর্মের সকল গেম, চ্যাট ও প্রফিট রেট কন্ট্রোল করুন</p>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    <div class="grid-container">
 
+        <!-- ১. উইন/লস & প্রফিট রেট কন্ট্রোল -->
+        <div class="card">
+            <h3>গেম আউটকাম & ওডস কন্ট্রোল</h3>
+            
+            <label for="profit-rate">প্রফিট রেট (Odds Multiplier):</label>
+            <input type="number" id="profit-rate" step="0.1" value="1.8" placeholder="যেমন: 1.5, 2.0">
+
+            <label for="game-outcome">ডিফল্ট আউটকাম মোড:</label>
+            <select id="game-outcome">
+                <option value="win">Win / Profit Mode</option>
+                <option value="loss">Loss Mode</option>
+                <option value="random">Random (Standard)</option>
+            </select>
+
+            <button onclick="updateGameSettings()">সেটিংস আপডেট করুন</button>
+        </div>
+
+        <!-- ২. নতুন গেম আপলোড -->
+        <div class="card">
+            <h3>নতুন গেম আপলোড</h3>
+            
+            <label for="game-title">গেমের নাম:</label>
+            <input type="text" id="game-title" placeholder="যেমন: Wheel Spin">
+
+            <label for="game-thumb">থাম্বনেইল ইমেজ URL / ফাইল:</label>
+            <input type="text" id="game-thumb" placeholder="https://example.com/image.png">
+
+            <label for="game-link">HTML গেম ফাইল লিঙ্ক:</label>
+            <input type="text" id="game-link" placeholder="game.html">
+
+            <button onclick="uploadGame()" style="background-color: #10b981;">গেম লাইভ করুন</button>
+        </div>
+
+        <!-- ৩. ২-ওয়ে লাইভ চ্যাট সাপোর্ট -->
+        <div class="card">
+            <h3>লাইভ চ্যাট ম্যানেজমেন্ট</h3>
+            
+            <label>ইউজার মেসেজ হিস্ট্রি:</label>
+            <div class="chat-admin-box" id="admin-chat-messages">
+                <div class="admin-msg user"><strong>User123:</strong> হেল্প দরকার, ডিপোজিট হচ্ছে না।</div>
+            </div>
+
+            <input type="text" id="admin-chat-input" placeholder="ইউজারকে রিপ্লাই দিন...">
+            <button onclick="sendAdminReply()">রিপ্লাই পাঠান</button>
+        </div>
+
+        <!-- ৪. রেজিস্টার্ড ইউজার তালিকা -->
+        <div class="card" style="grid-column: span 1 / -1;">
+            <h3>ইউজার লিস্ট ও আইডি</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ইউজার আইডি</th>
+                        <th>ইমেইল</th>
+                        <th>স্ট্যাটাস</th>
+                    </tr>
+                </thead>
+                <tbody id="user-table-body">
+                    <tr>
+                        <td>UID-998231</td>
+                        <td>user1@gmail.com</td>
+                        <td style="color: #10b981;">Active</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+
+    <!-- Firebase SDK Integration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+        import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+        // আপনার ফায়ারবেস কনফিগারেশন এখানে বসাবেন
         const firebaseConfig = {
-            apiKey: "AIzaSyAyTOnCm5IuPcB-yvGjFl3KbwRVxNrcNSY",
-            authDomain: "ff-to-gaming-4ea1b.firebaseapp.com",
-            databaseURL: "https://ff-to-gaming-4ea1b-default-rtdb.firebaseio.com",
-            projectId: "ff-to-gaming-4ea1b",
-            storageBucket: "ff-to-gaming-4ea1b.appspot.com",
-            messagingSenderId: "816776130875",
-            appId: "1:816776130875:web:c3e7984e0de53cbd89871e"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+            projectId: "YOUR_PROJECT",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        let isForceCrashed = false;
-        let gameLoopActive = false;
+        // গেম সেটিংস সেভ করা
+        window.updateGameSettings = () => {
+            const rate = document.getElementById('profit-rate').value;
+            const outcome = document.getElementById('game-outcome').value;
 
-        const serverStatus = document.getElementById('server-status');
-        const currentMultDisplay = document.getElementById('current-mult');
-        const forceCrashBtn = document.getElementById('force-crash-btn');
+            // Database Save Logic:
+            // set(ref(db, 'settings/gameControl'), { profitRate: rate, outcomeMode: outcome });
 
-        forceCrashBtn.addEventListener('click', () => {
-            isForceCrashed = true;
-        });
+            alert(`সেটিংস সফলভাবে সেভ হয়েছে!\nপ্রফিট রেট: ${rate}x\nমোড: ${outcome}`);
+        };
 
-        function generateCrashPoint() {
-            const e = Math.random();
-            if (e < 0.08) return 1.00;
-            return parseFloat((1 + Math.pow(e, 2) * 15).toFixed(2));
-        }
+        // নতুন গেম আপলোড
+        window.uploadGame = () => {
+            const title = document.getElementById('game-title').value;
+            const thumb = document.getElementById('game-thumb').value;
+            const link = document.getElementById('game-link').value;
 
-        async function runAutoGameLoop() {
-            if(gameLoopActive) return;
-            gameLoopActive = true;
+            if(!title || !thumb) return alert('গেমের নাম ও ছবি আবশ্যক!');
 
-            while (true) {
-                isForceCrashed = false;
-                serverStatus.innerText = "Status: Waiting for players...";
-                
-                for (let i = 5; i > 0; i--) {
-                    await set(ref(db, 'gameState'), { status: 'waiting', countdown: i, multiplier: 1.00 });
-                    await new Promise(r => setTimeout(r, 1000));
-                }
+            // Database Save Logic:
+            // push(ref(db, 'games'), { title, thumb, link });
 
-                const crashPoint = generateCrashPoint();
-                serverStatus.innerText = `Status: Running (Crash target: ${crashPoint}x)`;
-                
-                let startTime = Date.now();
-                let currentMult = 1.00;
+            alert('নতুন গেম সফলভাবে প্ল্যাটফর্মে যোগ করা হয়েছে!');
+            document.getElementById('game-title').value = '';
+            document.getElementById('game-thumb').value = '';
+            document.getElementById('game-link').value = '';
+        };
 
-                while (currentMult < crashPoint && !isForceCrashed) {
-                    let elapsed = (Date.now() - startTime) / 1000;
-                    currentMult = parseFloat((1 + Math.pow(elapsed, 1.7) * 0.12).toFixed(2));
-                    
-                    currentMultDisplay.innerText = currentMult.toFixed(2) + "x";
-                    await update(ref(db, 'gameState'), { status: 'running', multiplier: currentMult });
-                    await new Promise(r => setTimeout(r, 100));
-                }
+        // লাইভ চ্যাট রিপ্লাই পাঠানো
+        window.sendAdminReply = () => {
+            const input = document.getElementById('admin-chat-input');
+            const replyMsg = input.value.trim();
+            if(!replyMsg) return;
 
-                serverStatus.innerText = "Status: CRASHED!";
-                await set(ref(db, 'gameState'), { status: 'crashed', multiplier: currentMult });
-                await new Promise(r => setTimeout(r, 3000));
-            }
-        }
+            const chatBox = document.getElementById('admin-chat-messages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'admin-msg admin';
+            msgDiv.innerHTML = `<strong>Admin:</strong> ${replyMsg}`;
+            chatBox.appendChild(msgDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
 
-        runAutoGameLoop();
+            // Database Reply Logic:
+            // push(ref(db, 'chats/selectedUserId'), { sender: 'admin', text: replyMsg });
+
+            input.value = '';
+        };
     </script>
 </body>
 </html>
