@@ -9,7 +9,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
     body { background-color: #08080a; color: #fff; padding-bottom: 70px; overflow-x: hidden; }
 
-    /* Auth Screen (Login / Register) */
+    /* Auth Screen */
     #authScreen {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: #08080a; z-index: 99999; display: flex; justify-content: center; align-items: center; padding: 20px;
@@ -57,7 +57,7 @@
     .category-nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 0 10px 10px; }
     .cat-item {
       background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);
-      border-radius: 8px; text-align: center; padding: 8px 0; color: #aaa; text-decoration: none; font-size: 11px;
+      border-radius: 8px; text-align: center; padding: 8px 0; color: #aaa; text-decoration: none; font-size: 11px; cursor: pointer;
     }
     .cat-item.active {
       background: linear-gradient(180deg, rgba(255, 140, 0, 0.2), transparent);
@@ -134,7 +134,7 @@
 </head>
 <body>
 
-  <!-- Login / Register Screen -->
+  <!-- Auth Screen -->
   <div id="authScreen">
     <div class="auth-box">
       <div class="auth-logo" id="authLogoText">CV999</div>
@@ -143,14 +143,12 @@
         <button class="tab-btn" id="registerTabBtn" type="button">রেজিস্ট্রেশন</button>
       </div>
 
-      <!-- Login Form -->
       <div id="loginForm">
         <input type="text" id="loginUsername" class="input-field" placeholder="ইউজারনেম বা মোবাইল নম্বর">
         <input type="password" id="loginPassword" class="input-field" placeholder="পাসওয়ার্ড">
         <button class="submit-btn" id="loginBtn" type="button">লগইন করুন</button>
       </div>
 
-      <!-- Register Form -->
       <div id="registerForm" style="display:none;">
         <input type="text" id="regUsername" class="input-field" placeholder="ইউজারনেম দিন">
         <input type="password" id="regPassword" class="input-field" placeholder="পাসওয়ার্ড দিন">
@@ -161,7 +159,6 @@
 
   <!-- Main App Wrapper -->
   <div id="mainAppContent" style="display:none;">
-    <!-- Header -->
     <div class="header">
       <div class="logo-text" id="displayLogo">CV999</div>
       <div class="balance-box">
@@ -182,13 +179,12 @@
       </div>
 
       <div class="category-nav">
-        <a href="#" class="cat-item active"><i class="fa-solid fa-fire"></i>হট গেম</a>
-        <a href="#" class="cat-item"><i class="fa-solid fa-gamepad"></i>স্লট</a>
-        <a href="#" class="cat-item"><i class="fa-solid fa-fish-fins"></i>ফিশিং</a>
-        <a href="#" class="cat-item"><i class="fa-solid fa-dice"></i>ক্যাসিনো</a>
+        <div class="cat-item active" data-cat="hot"><i class="fa-solid fa-fire"></i>হট গেম</div>
+        <div class="cat-item" data-cat="slot"><i class="fa-solid fa-gamepad"></i>স্লট</div>
+        <div class="cat-item" data-cat="fish"><i class="fa-solid fa-fish-fins"></i>ফিশিং</div>
+        <div class="cat-item" data-cat="casino"><i class="fa-solid fa-dice"></i>ক্যাসিনো</div>
       </div>
 
-      <!-- গেম লবি গ্রিড -->
       <div class="game-grid" id="gameGrid"></div>
     </div>
 
@@ -201,12 +197,12 @@
         </div>
         <div class="chat-input-row">
           <input type="text" id="chatInput" class="input-field" placeholder="মেসেজ লিখুন..." style="margin:0;">
-          <button class="submit-btn" id="sendChatBtn" style="width: 75px; margin-top:0;" type="button">প্রদান</button>
+          <button class="submit-btn" id="sendChatBtn" style="width: 75px; margin-top:0;" type="button">পাঠান</button>
         </div>
       </div>
     </div>
 
-    <!-- Promotion View -->
+    <!-- Promo View -->
     <div id="promoView" class="view-section">
       <h3 style="color:#ff8c00; margin-bottom:10px;">বিশেষ অফার</h3>
       <div style="background:#121318; padding:15px; border-radius:8px; border:1px solid #222; font-size:13px;">
@@ -270,7 +266,6 @@
     </div>
   </div>
 
-  <!-- Firebase & App Logic -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
     import { getDatabase, ref, onValue, push, set, get } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
@@ -285,6 +280,8 @@
     const db = getDatabase(app);
 
     let loggedUser = localStorage.getItem('logged_user');
+    let allGames = {};
+    let selectedCategory = 'hot';
 
     if (loggedUser) {
       document.getElementById('authScreen').style.display = 'none';
@@ -387,7 +384,7 @@
 
     document.getElementById('refreshBalanceBtn').addEventListener('click', loadUserBalance);
 
-    // Modal Control Listeners
+    // Modal Controls
     document.getElementById('openDepositModalBtn').addEventListener('click', () => {
       document.getElementById('depositModal').style.display = 'flex';
     });
@@ -402,14 +399,32 @@
       document.getElementById('withdrawModal').style.display = 'none';
     });
 
-    // Game Lobby Render & Launcher
+    // Category Selector
+    document.querySelectorAll('.cat-item').forEach(item => {
+      item.addEventListener('click', () => {
+        document.querySelectorAll('.cat-item').forEach(el => el.classList.remove('active'));
+        item.classList.add('active');
+        selectedCategory = item.getAttribute('data-cat');
+        renderGameGrid();
+      });
+    });
+
+    // Game Lobby Render
     onValue(ref(db, 'games'), (snapshot) => {
+      allGames = snapshot.val() || {};
+      renderGameGrid();
+    });
+
+    function renderGameGrid() {
       const gameGrid = document.getElementById('gameGrid');
       gameGrid.innerHTML = '';
-      const data = snapshot.val();
-      if(!data) return;
-      for (let id in data) {
-        const game = data[id];
+      if(!allGames) return;
+
+      for (let id in allGames) {
+        const game = allGames[id];
+        const category = game.category || 'hot';
+        if(selectedCategory !== 'hot' && category !== selectedCategory) continue;
+
         const card = document.createElement('div');
         card.className = 'game-card';
         card.addEventListener('click', () => {
@@ -421,7 +436,7 @@
         card.innerHTML = `<img src="${cover}"><div class="game-title">${game.gameName}</div>`;
         gameGrid.appendChild(card);
       }
-    });
+    }
 
     document.getElementById('closeGameLauncherBtn').addEventListener('click', () => {
       document.getElementById('gameLauncher').style.display = 'none';
@@ -469,7 +484,7 @@
         const chatBox = document.getElementById('chatBox');
         chatBox.innerHTML = '';
         const data = snapshot.val();
-        if(!data) { chatBox.innerHTML = '<div class="chat-msg admin">হ্যালো!</div>'; return; }
+        if(!data) { chatBox.innerHTML = '<div class="chat-msg admin">হ্যালো! আপনার যেকোনো সহায়তায় মেসেজ দিন।</div>'; return; }
         for(let key in data) {
           const msg = data[key];
           chatBox.innerHTML += `<div class="chat-msg ${msg.sender === 'user' ? 'user' : 'admin'}">${msg.message}</div>`;
