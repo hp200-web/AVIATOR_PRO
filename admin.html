@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <title>Admin Control Panel - CV999</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
     body { background: #0c0d10; color: #fff; padding: 15px; }
     h1 { color: #ff8c00; text-align: center; margin-bottom: 20px; font-size: 20px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 15px; }
     .card { background: #14151b; border: 1px solid #ff8c00; padding: 15px; border-radius: 8px; }
     h2 { color: #ff8c00; font-size: 14px; margin-bottom: 12px; border-bottom: 1px solid #222; padding-bottom: 6px; }
     label { font-size: 11px; color: #aaa; display: block; margin-top: 6px; }
-    input[type="text"], input[type="url"], textarea {
+    input[type="text"], input[type="url"], input[type="file"], textarea {
       width: 100%; padding: 8px; margin: 4px 0 10px; background: #0a0b0d; border: 1px solid #2a2b32; color: #fff; border-radius: 4px; font-size: 12px;
     }
     textarea { height: 100px; resize: vertical; font-family: monospace; }
@@ -37,19 +38,21 @@
       <input type="text" id="adminNumberInput" placeholder="017xxxxxxxx">
       <label>ব্যানার ইমেজ URL</label>
       <input type="url" id="bannerUrlInput" placeholder="https://...">
-      <button onclick="saveSettings()">সেটিংস আপডেট করুন</button>
+      <button id="saveSettingsBtn" type="button">সেটিংস আপডেট করুন</button>
     </div>
 
-    <!-- ২. গেমের Index.html কোড পেস্ট বক্স -->
+    <!-- ২. গেমের Index.html কোড পেস্ট বক্স ও ফাইল ম্যানেজার থেকে কভার আপলোড -->
     <div class="card">
-      <h2>🎮 গেমের Index.html পেস্ট করে লবিতে যোগ করুন</h2>
+      <h2>🎮 গেম যোগ করুন (ফাইল আপসহ)</h2>
       <label>গেমের নাম:</label>
       <input type="text" id="gameNameInput" placeholder="যেমন: Ludo / Slot">
-      <label>কভার ছবির URL:</label>
-      <input type="url" id="gameCoverInput" placeholder="https://...">
+      
+      <label>ফোন গ্যালারি/ফাইল ম্যানেজার থেকে কভার ছবি সিলেক্ট করুন:</label>
+      <input type="file" id="gameCoverFile" accept="image/*">
+      
       <label>Index.html সম্পূর্ণ কোড পেস্ট করুন:</label>
       <textarea id="gameHtmlCodeInput" placeholder="<!DOCTYPE html>..."></textarea>
-      <button onclick="publishGameToLobby()">লবিতে পাবলিশ করুন</button>
+      <button id="publishGameBtn" type="button">লবিতে পাবলিশ করুন</button>
     </div>
 
     <!-- ৩. ডিপোজিট অ্যাপ্রুভাল -->
@@ -65,13 +68,13 @@
     </div>
 
     <!-- ৫. লাইভ চ্যাট সাপোর্ট ম্যানেজমেন্ট -->
-    <div class="card" style="grid-column: span 1;">
+    <div class="card">
       <h2>💬 লাইভ চ্যাট সাপোর্ট</h2>
-      <div id="chatUserList" style="max-height: 120px; overflow-y: auto; margin-bottom: 8px;"></div>
+      <div id="chatUserList" style="max-height: 120px; overflow-y: auto; margin-bottom: 8px;"><div style="font-size:11px; color:#aaa;">কোনো চ্যাট নেই।</div></div>
       <div id="activeChatBox" style="background:#0a0b0d; padding:8px; border-radius:4px; height:100px; overflow-y:auto; display:none; font-size:11px; margin-bottom:6px;"></div>
       <div id="adminChatInputRow" style="display:none; gap:4px;">
         <input type="text" id="adminReplyInput" placeholder="উত্তর লিখুন..." style="margin:0;">
-        <button onclick="sendAdminReply()" style="width:60px;">পাঠান</button>
+        <button id="sendAdminReplyBtn" style="width:60px;" type="button">পাঠান</button>
       </div>
     </div>
   </div>
@@ -91,36 +94,51 @@
 
     let selectedChatUser = null;
 
-    window.saveSettings = function() {
+    // Save Settings
+    document.getElementById('saveSettingsBtn').addEventListener('click', () => {
       const title = document.getElementById('siteTitleInput').value;
       const num = document.getElementById('adminNumberInput').value;
       const banner = document.getElementById('bannerUrlInput').value;
       set(ref(db, 'settings'), { siteTitle: title, adminNumber: num, bannerUrl: banner })
         .then(() => alert("সেটিংস আপডেট হয়েছে!"));
-    };
+    });
 
-    // টেক্সটবক্সে ইনডেক্স কোড পেস্ট করে গেম লবিতে যোগ করার ফাংশন
-    window.publishGameToLobby = function() {
+    // Publish Game with File Upload (Cover Photo from Phone)
+    document.getElementById('publishGameBtn').addEventListener('click', () => {
       const name = document.getElementById('gameNameInput').value.trim();
-      const cover = document.getElementById('gameCoverInput').value.trim();
       const code = document.getElementById('gameHtmlCodeInput').value.trim();
+      const fileInput = document.getElementById('gameCoverFile');
 
       if(!name || !code) return alert("গেমের নাম এবং HTML কোড আবশ্যক!");
 
+      if(fileInput.files && fileInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const base64Image = e.target.result; // ছবির বেস৬৪ কোড
+          saveGameToDatabase(name, base64Image, code);
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+      } else {
+        // যদি ছবি সিলেক্ট না করে, তবে ডিফল্ট ইমেজ দিয়ে সেভ হবে
+        saveGameToDatabase(name, 'https://via.placeholder.com/100x90/1a1b22/ff8c00?text=GAME', code);
+      }
+    });
+
+    function saveGameToDatabase(name, coverUrl, code) {
       push(ref(db, 'games'), {
         gameName: name,
-        coverUrl: cover,
+        coverUrl: coverUrl,
         htmlCode: code,
         time: Date.now()
       }).then(() => {
         alert("গেমটি সফলভাবে লবিতে যোগ হয়েছে!");
         document.getElementById('gameNameInput').value = '';
-        document.getElementById('gameCoverInput').value = '';
+        document.getElementById('gameCoverFile').value = '';
         document.getElementById('gameHtmlCodeInput').value = '';
       });
-    };
+    }
 
-    // ডিপোজিট লিস্ট ও অ্যাপ্রুভ
+    // Deposit List & Approval
     onValue(ref(db, 'deposits'), (snapshot) => {
       const list = document.getElementById('depositList');
       list.innerHTML = '';
@@ -130,13 +148,23 @@
         if(data[key].status === 'pending') {
           has = true;
           const item = data[key];
-          list.innerHTML += `<li>ID: ${item.userId} | ৳${item.amount} | Trx: ${item.trxId}<div style="margin-top:4px;"><button class="btn-green" onclick="approveDep('${key}', '${item.userId}', ${item.amount})">Approve</button><button class="btn-red" onclick="rejectDep('${key}')">Reject</button></div></li>`;
+          list.innerHTML += `<li>ID: ${item.userId} | ৳${item.amount} | Trx: ${item.trxId}<div style="margin-top:4px;"><button class="btn-green approve-dep" data-key="${key}" data-user="${item.userId}" data-amount="${item.amount}" type="button">Approve</button><button class="btn-red reject-dep" data-key="${key}" type="button">Reject</button></div></li>`;
         }
       }
       if(!has) list.innerHTML = '<li>কোনো প্যান্ডিং ডিপোজিট নেই।</li>';
+
+      document.querySelectorAll('.approve-dep').forEach(btn => {
+        btn.addEventListener('click', () => {
+          approveDep(btn.getAttribute('data-key'), btn.getAttribute('data-user'), parseFloat(btn.getAttribute('data-amount')));
+        });
+      });
+
+      document.querySelectorAll('.reject-dep').forEach(btn => {
+        btn.addEventListener('click', () => rejectDep(btn.getAttribute('data-key')));
+      });
     });
 
-    window.approveDep = function(key, userId, amount) {
+    function approveDep(key, userId, amount) {
       const balRef = ref(db, 'users/' + userId + '/balance');
       get(balRef).then((snap) => {
         set(balRef, (snap.val() || 0) + amount).then(() => {
@@ -144,10 +172,14 @@
           alert("ডিপোজিট অ্যাপ্রুভ হয়েছে!");
         });
       });
-    };
-    window.rejectDep = (key) => set(ref(db, 'deposits/' + key + '/status'), 'rejected');
+    }
 
-    // উইথড্র লিস্ট ও অ্যাপ্রুভ
+    function rejectDep(key) {
+      set(ref(db, 'deposits/' + key + '/status'), 'rejected');
+      alert("ডিপোজিট রিজেক্ট করা হয়েছে!");
+    }
+
+    // Withdraw List & Approval
     onValue(ref(db, 'withdrawals'), (snapshot) => {
       const list = document.getElementById('withdrawList');
       list.innerHTML = '';
@@ -157,13 +189,23 @@
         if(data[key].status === 'pending') {
           has = true;
           const item = data[key];
-          list.innerHTML += `<li>ID: ${item.userId} | ৳${item.amount} | No: ${item.number}<div style="margin-top:4px;"><button class="btn-green" onclick="approveWit('${key}', '${item.userId}', ${item.amount})">Approve</button><button class="btn-red" onclick="rejectWit('${key}')">Reject</button></div></li>`;
+          list.innerHTML += `<li>ID: ${item.userId} | ৳${item.amount} | No: ${item.number}<div style="margin-top:4px;"><button class="btn-green approve-wit" data-key="${key}" data-user="${item.userId}" data-amount="${item.amount}" type="button">Approve</button><button class="btn-red reject-wit" data-key="${key}" type="button">Reject</button></div></li>`;
         }
       }
       if(!has) list.innerHTML = '<li>কোনো প্যান্ডিং উইথড্র নেই।</li>';
+
+      document.querySelectorAll('.approve-wit').forEach(btn => {
+        btn.addEventListener('click', () => {
+          approveWit(btn.getAttribute('data-key'), btn.getAttribute('data-user'), parseFloat(btn.getAttribute('data-amount')));
+        });
+      });
+
+      document.querySelectorAll('.reject-wit').forEach(btn => {
+        btn.addEventListener('click', () => rejectWit(btn.getAttribute('data-key')));
+      });
     });
 
-    window.approveWit = function(key, userId, amount) {
+    function approveWit(key, userId, amount) {
       const balRef = ref(db, 'users/' + userId + '/balance');
       get(balRef).then((snap) => {
         const current = snap.val() || 0;
@@ -173,21 +215,31 @@
           alert("উইথড্র অ্যাপ্রুভ হয়েছে!");
         });
       });
-    };
-    window.rejectWit = (key) => set(ref(db, 'withdrawals/' + key + '/status'), 'rejected');
+    }
 
-    // লাইভ চ্যাট ম্যানেজমেন্ট
+    function rejectWit(key) {
+      set(ref(db, 'withdrawals/' + key + '/status'), 'rejected');
+      alert("উইথড্র রিজেক্ট করা হয়েছে!");
+    }
+
+    // Live Chat Management
     onValue(ref(db, 'chats'), (snapshot) => {
       const chatUserList = document.getElementById('chatUserList');
       chatUserList.innerHTML = '';
       const data = snapshot.val();
       if(!data) { chatUserList.innerHTML = '<div style="font-size:11px; color:#aaa;">কোনো চ্যাট নেই।</div>'; return; }
       for(let userId in data) {
-        chatUserList.innerHTML += `<div class="chat-user-btn" onclick="openAdminChat('${userId}')"><i class="fa-solid fa-user"></i> ইউজার: ${userId}</div>`;
+        chatUserList.innerHTML += `<div class="chat-user-btn chat-user-item" data-userid="${userId}"><i class="fa-solid fa-user"></i> ইউজার: ${userId}</div>`;
       }
+
+      document.querySelectorAll('.chat-user-item').forEach(item => {
+        item.addEventListener('click', () => {
+          openAdminChat(item.getAttribute('data-userid'));
+        });
+      });
     });
 
-    window.openAdminChat = function(userId) {
+    function openAdminChat(userId) {
       selectedChatUser = userId;
       document.getElementById('activeChatBox').style.display = 'block';
       document.getElementById('adminChatInputRow').style.display = 'flex';
@@ -200,14 +252,14 @@
         }
         box.scrollTop = box.scrollHeight;
       });
-    };
+    }
 
-    window.sendAdminReply = function() {
+    document.getElementById('sendAdminReplyBtn').addEventListener('click', () => {
       const text = document.getElementById('adminReplyInput').value.trim();
       if(!text || !selectedChatUser) return;
       push(ref(db, 'chats/' + selectedChatUser), { sender: 'admin', message: text, time: Date.now() })
         .then(() => { document.getElementById('adminReplyInput').value = ''; });
-    };
+    });
   </script>
 </body>
 </html>
