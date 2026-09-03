@@ -9,6 +9,19 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
     body { background-color: #08080a; color: #fff; padding-bottom: 70px; overflow-x: hidden; }
 
+    /* Auth Screen (Login / Register) */
+    #authScreen {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #08080a; z-index: 99999; display: flex; justify-content: center; align-items: center; padding: 20px;
+    }
+    .auth-box {
+      background: #14151a; border: 1px solid #ff8c00; padding: 25px; border-radius: 12px; width: 100%; max-width: 380px; text-align: center;
+    }
+    .auth-logo { font-size: 26px; font-weight: 900; background: linear-gradient(45deg, #ffd700, #ff8c00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 15px; }
+    .tab-toggle { display: flex; margin-bottom: 15px; background: #0a0b0d; border-radius: 6px; padding: 3px; }
+    .tab-btn { flex: 1; background: none; border: none; color: #888; padding: 8px; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 12px; }
+    .tab-btn.active { background: #ff8c00; color: #000; }
+
     /* Header */
     .header {
       display: flex; justify-content: space-between; align-items: center;
@@ -52,7 +65,7 @@
     }
     .cat-item i { display: block; font-size: 16px; margin-bottom: 2px; }
 
-    /* Game Lobby Grid (এডমিন থেকে পেস্ট করা গেমগুলো এখানে শো করবে) */
+    /* Game Lobby Grid */
     .game-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 0 10px; }
     .game-card {
       background: #121318; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px;
@@ -121,117 +134,146 @@
 </head>
 <body>
 
-  <!-- Header -->
-  <div class="header">
-    <div class="logo-text" id="displayLogo">CV999</div>
-    <div class="balance-box">
-      <i class="fa-solid fa-coins" style="color: #ffd700;"></i>
-      <span>৳ <b id="userBalance">0.00</b></span>
-      <i class="fa-solid fa-rotate-right" style="color:#ff8c00; cursor:pointer;" onclick="loadUserBalance()"></i>
-    </div>
-    <div class="action-btns">
-      <button class="top-btn" onclick="openModal('depositModal')">ডিপোজিট</button>
-      <button class="top-btn withdraw" onclick="openModal('withdrawModal')">উইথড্র</button>
-    </div>
-  </div>
-
-  <!-- Home View -->
-  <div id="homeView" class="view-section active">
-    <div class="banner-container">
-      <img id="mainBanner" src="https://via.placeholder.com/400x140/111/ff8c00?text=VIP+Gaming+Banner" class="banner-img">
-    </div>
-
-    <div class="category-nav">
-      <a href="#" class="cat-item active"><i class="fa-solid fa-fire"></i>হট গেম</a>
-      <a href="#" class="cat-item"><i class="fa-solid fa-gamepad"></i>স্লট</a>
-      <a href="#" class="cat-item"><i class="fa-solid fa-fish-fins"></i>ফিশিং</a>
-      <a href="#" class="cat-item"><i class="fa-solid fa-dice"></i>ক্যাসিনো</a>
-    </div>
-
-    <!-- গেম লবি গ্রিড -->
-    <div class="game-grid" id="gameGrid"></div>
-  </div>
-
-  <!-- Chat View -->
-  <div id="chatView" class="view-section">
-    <div class="chat-container">
-      <h3 style="color:#ff8c00; margin-bottom:8px; text-align:center; font-size:14px;"><i class="fa-solid fa-headset"></i> লাইভ কাস্টমার কেয়ার</h3>
-      <div class="chat-box" id="chatBox">
-        <div class="chat-msg admin">হ্যালো! আপনার যেকোনো সহায়তায় এখানে মেসেজ করুন।</div>
+  <!-- Login / Register Screen -->
+  <div id="authScreen">
+    <div class="auth-box">
+      <div class="auth-logo" id="authLogoText">CV999</div>
+      <div class="tab-toggle">
+        <button class="tab-btn active" id="loginTabBtn" type="button">লগইন</button>
+        <button class="tab-btn" id="registerTabBtn" type="button">রেজিস্ট্রেশন</button>
       </div>
-      <div class="chat-input-row">
-        <input type="text" id="chatInput" class="input-field" placeholder="মেসেজ লিখুন..." style="margin:0;">
-        <button class="submit-btn" style="width: 75px; margin-top:0;" onclick="sendChatMessage()">প্রদান</button>
+
+      <!-- Login Form -->
+      <div id="loginForm">
+        <input type="text" id="loginUsername" class="input-field" placeholder="ইউজারনেম বা মোবাইল নম্বর">
+        <input type="password" id="loginPassword" class="input-field" placeholder="পাসওয়ার্ড">
+        <button class="submit-btn" id="loginBtn" type="button">লগইন করুন</button>
+      </div>
+
+      <!-- Register Form -->
+      <div id="registerForm" style="display:none;">
+        <input type="text" id="regUsername" class="input-field" placeholder="ইউজারনেম দিন">
+        <input type="password" id="regPassword" class="input-field" placeholder="পাসওয়ার্ড দিন">
+        <button class="submit-btn" id="registerBtn" type="button">একাউন্ট তৈরি করুন</button>
       </div>
     </div>
   </div>
 
-  <!-- Promotion View -->
-  <div id="promoView" class="view-section">
-    <h3 style="color:#ff8c00; margin-bottom:10px;">বিশেষ অফার</h3>
-    <div style="background:#121318; padding:15px; border-radius:8px; border:1px solid #222; font-size:13px;">
-      <p>🔥 প্রতিটি ডিপোজিটে পান ২০% ইনস্ট্যান্ট বোনাস!</p>
-    </div>
-  </div>
-
-  <!-- Profile View -->
-  <div id="profileView" class="view-section">
-    <h3 style="color:#ff8c00; margin-bottom:10px;">ইউজার প্রোফাইল</h3>
-    <div style="background:#121318; padding:15px; border-radius:8px; border:1px solid #222; font-size:13px;">
-      <p><strong>ইউজার আইডি:</strong> <span id="profileUserId">-</span></p>
-      <p style="margin-top:8px;"><strong>স্ট্যাটাস:</strong> <span style="color:#28a745;">অ্যাক্টিভ ✅</span></p>
-    </div>
-  </div>
-
-  <!-- Game Launcher -->
-  <div class="game-launcher" id="gameLauncher">
-    <div class="game-launcher-header">
-      <span style="color:#ff8c00; font-weight:bold; font-size:13px;" id="currentGameTitle">Gaming Screen</span>
-      <button onclick="closeGameLauncher()" style="background:#dc3545; color:#fff; border:none; padding:4px 10px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:11px;">
-        <i class="fa-solid fa-xmark"></i> বের হন
-      </button>
-    </div>
-    <iframe class="game-frame" id="gameIframe"></iframe>
-  </div>
-
-  <!-- Deposit Modal -->
-  <div class="modal" id="depositModal">
-    <div class="modal-content">
-      <span class="close-btn" onclick="closeModal('depositModal')">&times;</span>
-      <h3 style="color:#ff8c00; text-align:center; font-size:15px; margin-bottom:8px;">ডিপোজিট রিকোয়েস্ট</h3>
-      <div class="notice-box">
-        পেমেন্ট নাম্বার:<br>
-        <span id="displayAdminNumber" style="font-size:16px;">লোড হচ্ছে...</span>
+  <!-- Main App Wrapper -->
+  <div id="mainAppContent" style="display:none;">
+    <!-- Header -->
+    <div class="header">
+      <div class="logo-text" id="displayLogo">CV999</div>
+      <div class="balance-box">
+        <i class="fa-solid fa-coins" style="color: #ffd700;"></i>
+        <span>৳ <b id="userBalance">0.00</b></span>
+        <i class="fa-solid fa-rotate-right" id="refreshBalanceBtn" style="color:#ff8c00; cursor:pointer;" title="রিফ্রেশ"></i>
       </div>
-      <input type="number" id="depAmount" class="input-field" placeholder="টাকার পরিমাণ (৳)" required>
-      <input type="text" id="depTrx" class="input-field" placeholder="Transaction ID" required>
-      <button class="submit-btn" onclick="submitDeposit()">ডিপোজিট জমা দিন</button>
+      <div class="action-btns">
+        <button class="top-btn" id="openDepositModalBtn" type="button">ডিপোজিট</button>
+        <button class="top-btn withdraw" id="openWithdrawModalBtn" type="button">উইথড্র</button>
+      </div>
+    </div>
+
+    <!-- Home View -->
+    <div id="homeView" class="view-section active">
+      <div class="banner-container">
+        <img id="mainBanner" src="https://via.placeholder.com/400x140/111/ff8c00?text=VIP+Gaming+Banner" class="banner-img">
+      </div>
+
+      <div class="category-nav">
+        <a href="#" class="cat-item active"><i class="fa-solid fa-fire"></i>হট গেম</a>
+        <a href="#" class="cat-item"><i class="fa-solid fa-gamepad"></i>স্লট</a>
+        <a href="#" class="cat-item"><i class="fa-solid fa-fish-fins"></i>ফিশিং</a>
+        <a href="#" class="cat-item"><i class="fa-solid fa-dice"></i>ক্যাসিনো</a>
+      </div>
+
+      <!-- গেম লবি গ্রিড -->
+      <div class="game-grid" id="gameGrid"></div>
+    </div>
+
+    <!-- Chat View -->
+    <div id="chatView" class="view-section">
+      <div class="chat-container">
+        <h3 style="color:#ff8c00; margin-bottom:8px; text-align:center; font-size:14px;"><i class="fa-solid fa-headset"></i> লাইভ কাস্টমার কেয়ার</h3>
+        <div class="chat-box" id="chatBox">
+          <div class="chat-msg admin">হ্যালো! আপনার যেকোনো সহায়তায় এখানে মেসেজ করুন।</div>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" id="chatInput" class="input-field" placeholder="মেসেজ লিখুন..." style="margin:0;">
+          <button class="submit-btn" id="sendChatBtn" style="width: 75px; margin-top:0;" type="button">প্রদান</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Promotion View -->
+    <div id="promoView" class="view-section">
+      <h3 style="color:#ff8c00; margin-bottom:10px;">বিশেষ অফার</h3>
+      <div style="background:#121318; padding:15px; border-radius:8px; border:1px solid #222; font-size:13px;">
+        <p>🔥 প্রতিটি ডিপোজিটে পান ২০% ইনস্ট্যান্ট বোনাস!</p>
+      </div>
+    </div>
+
+    <!-- Profile View -->
+    <div id="profileView" class="view-section">
+      <h3 style="color:#ff8c00; margin-bottom:10px;">ইউজার প্রোফাইল</h3>
+      <div style="background:#121318; padding:15px; border-radius:8px; border:1px solid #222; font-size:13px;">
+        <p><strong>ইউজারনেম:</strong> <span id="profileUserId">-</span></p>
+        <p style="margin-top:8px;"><strong>স্ট্যাটাস:</strong> <span style="color:#28a745;">অ্যাক্টিভ ✅</span></p>
+        <button id="logoutBtn" style="background:#dc3545; color:#fff; border:none; padding:8px 12px; border-radius:6px; margin-top:15px; width:100%; font-weight:bold; cursor:pointer;" type="button">লগআউট করুন</button>
+      </div>
+    </div>
+
+    <!-- Game Launcher -->
+    <div class="game-launcher" id="gameLauncher">
+      <div class="game-launcher-header">
+        <span style="color:#ff8c00; font-weight:bold; font-size:13px;" id="currentGameTitle">Gaming Screen</span>
+        <button id="closeGameLauncherBtn" style="background:#dc3545; color:#fff; border:none; padding:4px 10px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:11px;" type="button">
+          <i class="fa-solid fa-xmark"></i> বের হন
+        </button>
+      </div>
+      <iframe class="game-frame" id="gameIframe"></iframe>
+    </div>
+
+    <!-- Deposit Modal -->
+    <div class="modal" id="depositModal">
+      <div class="modal-content">
+        <span class="close-btn" id="closeDepositModalBtn">&times;</span>
+        <h3 style="color:#ff8c00; text-align:center; font-size:15px; margin-bottom:8px;">ডিপোজিট রিকোয়েস্ট</h3>
+        <div class="notice-box">
+          পেমেন্ট নাম্বার:<br>
+          <span id="displayAdminNumber" style="font-size:16px;">লোড হচ্ছে...</span>
+        </div>
+        <input type="number" id="depAmount" class="input-field" placeholder="টাকার পরিমাণ (৳)" required>
+        <input type="text" id="depTrx" class="input-field" placeholder="Transaction ID" required>
+        <button class="submit-btn" id="submitDepositBtn" type="button">ডিপোজিট জমা দিন</button>
+      </div>
+    </div>
+
+    <!-- Withdraw Modal -->
+    <div class="modal" id="withdrawModal">
+      <div class="modal-content">
+        <span class="close-btn" id="closeWithdrawModalBtn">&times;</span>
+        <h3 style="color:#ff8c00; text-align:center; font-size:15px; margin-bottom:8px;">উইথড্র রিকোয়েস্ট</h3>
+        <input type="number" id="witAmount" class="input-field" placeholder="উইথড্র পরিমাণ (৳)" required>
+        <input type="text" id="witNumber" class="input-field" placeholder="বিকাশ/নগদ নম্বর" required>
+        <button class="submit-btn" id="submitWithdrawBtn" type="button">উইথড্র পাঠান</button>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+      <div class="nav-item active" data-target="homeView"><i class="fa-solid fa-house"></i>হোম</div>
+      <div class="nav-item" data-target="promoView"><i class="fa-solid fa-gift"></i>প্রমোশন</div>
+      <div class="nav-item" data-target="chatView"><i class="fa-solid fa-headset"></i>সেবা</div>
+      <div class="nav-item" data-target="profileView"><i class="fa-solid fa-user"></i>প্রোফাইল</div>
     </div>
   </div>
 
-  <!-- Withdraw Modal -->
-  <div class="modal" id="withdrawModal">
-    <div class="modal-content">
-      <span class="close-btn" onclick="closeModal('withdrawModal')">&times;</span>
-      <h3 style="color:#ff8c00; text-align:center; font-size:15px; margin-bottom:8px;">উইথড্র রিকোয়েস্ট</h3>
-      <input type="number" id="witAmount" class="input-field" placeholder="উইথড্র পরিমাণ (৳)" required>
-      <input type="text" id="witNumber" class="input-field" placeholder="বিকাশ/নগদ নম্বর" required>
-      <button class="submit-btn" onclick="submitWithdraw()">উইথড্র পাঠান</button>
-    </div>
-  </div>
-
-  <!-- Bottom Navigation -->
-  <div class="bottom-nav">
-    <div class="nav-item active" onclick="switchTab('homeView', this)"><i class="fa-solid fa-house"></i>হোম</div>
-    <div class="nav-item" onclick="switchTab('promoView', this)"><i class="fa-solid fa-gift"></i>প্রমোশন</div>
-    <div class="nav-item" onclick="switchTab('chatView', this)"><i class="fa-solid fa-headset"></i>সেবা</div>
-    <div class="nav-item" onclick="switchTab('profileView', this)"><i class="fa-solid fa-user"></i>প্রোফাইল</div>
-  </div>
-
-  <!-- Firebase Logic -->
+  <!-- Firebase & App Logic -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getDatabase, ref, onValue, push, set } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+    import { getDatabase, ref, onValue, push, set, get } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyASh4Og6vNlk6CCRtUep5y9etqcCxB-9iE",
@@ -242,96 +284,199 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    let currentUserId = localStorage.getItem('user_id') || 'User_' + Math.floor(1000 + Math.random() * 9000);
-    localStorage.setItem('user_id', currentUserId);
-    document.getElementById('profileUserId').innerText = currentUserId;
+    let loggedUser = localStorage.getItem('logged_user');
 
-    window.switchTab = function(viewId, element) {
-      document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-      document.getElementById(viewId).classList.add('active');
-      element.classList.add('active');
-    };
+    if (loggedUser) {
+      document.getElementById('authScreen').style.display = 'none';
+      document.getElementById('mainAppContent').style.display = 'block';
+      document.getElementById('profileUserId').innerText = loggedUser;
+      loadUserBalance();
+      listenUserChats(loggedUser);
+    }
 
+    // Auth Switch Buttons
+    document.getElementById('loginTabBtn').addEventListener('click', () => {
+      document.getElementById('loginForm').style.display = 'block';
+      document.getElementById('registerForm').style.display = 'none';
+      document.getElementById('loginTabBtn').classList.add('active');
+      document.getElementById('registerTabBtn').classList.remove('active');
+    });
+
+    document.getElementById('registerTabBtn').addEventListener('click', () => {
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('registerForm').style.display = 'block';
+      document.getElementById('registerTabBtn').classList.add('active');
+      document.getElementById('loginTabBtn').classList.remove('active');
+    });
+
+    // Register Handler
+    document.getElementById('registerBtn').addEventListener('click', () => {
+      const u = document.getElementById('regUsername').value.trim();
+      const p = document.getElementById('regPassword').value.trim();
+      if(!u || !p) return alert("ইউজারনেম এবং পাসওয়ার্ড দিন!");
+
+      const userRef = ref(db, 'users/' + u);
+      get(userRef).then((snap) => {
+        if(snap.exists()) {
+          alert("এই ইউজারনেমটি ইতিমধ্যে ব্যবহৃত হয়েছে!");
+        } else {
+          set(userRef, { password: p, balance: 0 }).then(() => {
+            alert("সফলভাবে একাউন্ট তৈরি হয়েছে! এখন লগইন করুন।");
+            document.getElementById('loginTabBtn').click();
+          });
+        }
+      });
+    });
+
+    // Login Handler
+    document.getElementById('loginBtn').addEventListener('click', () => {
+      const u = document.getElementById('loginUsername').value.trim();
+      const p = document.getElementById('loginPassword').value.trim();
+      if(!u || !p) return alert("সব তথ্য পূরণ করুন!");
+
+      get(ref(db, 'users/' + u)).then((snap) => {
+        if(!snap.exists()) {
+          alert("একাউন্ট পাওয়া যায়নি! দয়া করে রেজিস্ট্রেশন করুন।");
+        } else {
+          const data = snap.val();
+          if(data.password === p) {
+            localStorage.setItem('logged_user', u);
+            location.reload();
+          } else {
+            alert("ভুল পাসওয়ার্ড!");
+          }
+        }
+      });
+    });
+
+    // Logout Handler
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('logged_user');
+      location.reload();
+    });
+
+    // Bottom Navigation Switcher
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const targetId = item.getAttribute('data-target');
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        document.getElementById(targetId).classList.add('active');
+        item.classList.add('active');
+      });
+    });
+
+    // Realtime Settings Sync
     onValue(ref(db, 'settings'), (snapshot) => {
       const data = snapshot.val() || {};
       if(data.siteTitle) {
         document.getElementById('siteTitle').innerText = data.siteTitle;
         document.getElementById('displayLogo').innerText = data.siteTitle;
+        document.getElementById('authLogoText').innerText = data.siteTitle;
       }
       if(data.bannerUrl) document.getElementById('mainBanner').src = data.bannerUrl;
       if(data.adminNumber) document.getElementById('displayAdminNumber').innerText = data.adminNumber;
     });
 
-    window.loadUserBalance = function() {
-      onValue(ref(db, 'users/' + currentUserId + '/balance'), (snapshot) => {
+    function loadUserBalance() {
+      if(!loggedUser) return;
+      onValue(ref(db, 'users/' + loggedUser + '/balance'), (snapshot) => {
         document.getElementById('userBalance').innerText = (snapshot.val() || 0).toFixed(2);
       });
-    };
-    loadUserBalance();
+    }
 
-    // গেম লবি রেন্ডার করা
+    document.getElementById('refreshBalanceBtn').addEventListener('click', loadUserBalance);
+
+    // Modal Control Listeners
+    document.getElementById('openDepositModalBtn').addEventListener('click', () => {
+      document.getElementById('depositModal').style.display = 'flex';
+    });
+    document.getElementById('closeDepositModalBtn').addEventListener('click', () => {
+      document.getElementById('depositModal').style.display = 'none';
+    });
+
+    document.getElementById('openWithdrawModalBtn').addEventListener('click', () => {
+      document.getElementById('withdrawModal').style.display = 'flex';
+    });
+    document.getElementById('closeWithdrawModalBtn').addEventListener('click', () => {
+      document.getElementById('withdrawModal').style.display = 'none';
+    });
+
+    // Game Lobby Render & Launcher
     onValue(ref(db, 'games'), (snapshot) => {
       const gameGrid = document.getElementById('gameGrid');
       gameGrid.innerHTML = '';
       const data = snapshot.val();
+      if(!data) return;
       for (let id in data) {
         const game = data[id];
         const card = document.createElement('div');
         card.className = 'game-card';
-        card.onclick = () => {
+        card.addEventListener('click', () => {
           document.getElementById('currentGameTitle').innerText = game.gameName;
           document.getElementById('gameIframe').srcdoc = game.htmlCode;
           document.getElementById('gameLauncher').style.display = 'flex';
-        };
+        });
         const cover = game.coverUrl ? game.coverUrl : 'https://via.placeholder.com/100x90/1a1b22/ff8c00?text=GAME';
         card.innerHTML = `<img src="${cover}"><div class="game-title">${game.gameName}</div>`;
         gameGrid.appendChild(card);
       }
     });
 
-    window.closeGameLauncher = () => {
+    document.getElementById('closeGameLauncherBtn').addEventListener('click', () => {
       document.getElementById('gameLauncher').style.display = 'none';
       document.getElementById('gameIframe').srcdoc = '';
-    };
+    });
 
-    window.submitDeposit = function() {
+    // Deposit Submit
+    document.getElementById('submitDepositBtn').addEventListener('click', () => {
       const amount = parseFloat(document.getElementById('depAmount').value);
       const trx = document.getElementById('depTrx').value.trim();
       if(!amount || !trx) return alert("সব তথ্য দিন!");
-      push(ref(db, 'deposits'), { userId: currentUserId, amount, trxId: trx, status: 'pending', time: Date.now() })
-        .then(() => { alert("ডিপোজিট রিকোয়েস্ট জমা হয়েছে!"); closeModal('depositModal'); });
-    };
+      push(ref(db, 'deposits'), { userId: loggedUser, amount, trxId: trx, status: 'pending', time: Date.now() })
+        .then(() => {
+          alert("ডিপোজিট রিকোয়েস্ট জমা হয়েছে!");
+          document.getElementById('depositModal').style.display = 'none';
+          document.getElementById('depAmount').value = '';
+          document.getElementById('depTrx').value = '';
+        });
+    });
 
-    window.submitWithdraw = function() {
+    // Withdraw Submit
+    document.getElementById('submitWithdrawBtn').addEventListener('click', () => {
       const amount = parseFloat(document.getElementById('witAmount').value);
       const number = document.getElementById('witNumber').value.trim();
       if(!amount || !number) return alert("সব তথ্য দিন!");
-      push(ref(db, 'withdrawals'), { userId: currentUserId, amount, number, status: 'pending', time: Date.now() })
-        .then(() => { alert("উইথড্র রিকোয়েস্ট পাঠানো হয়েছে!"); closeModal('withdrawModal'); });
-    };
-
-    window.sendChatMessage = function() {
-      const text = document.getElementById('chatInput').value.trim();
-      if(!text) return;
-      push(ref(db, 'chats/' + currentUserId), { sender: 'user', message: text, time: Date.now() })
-        .then(() => { document.getElementById('chatInput').value = ''; });
-    };
-
-    onValue(ref(db, 'chats/' + currentUserId), (snapshot) => {
-      const chatBox = document.getElementById('chatBox');
-      chatBox.innerHTML = '';
-      const data = snapshot.val();
-      if(!data) { chatBox.innerHTML = '<div class="chat-msg admin">হ্যালো!</div>'; return; }
-      for(let key in data) {
-        const msg = data[key];
-        chatBox.innerHTML += `<div class="chat-msg ${msg.sender === 'user' ? 'user' : 'admin'}">${msg.message}</div>`;
-      }
-      chatBox.scrollTop = chatBox.scrollHeight;
+      push(ref(db, 'withdrawals'), { userId: loggedUser, amount, number, status: 'pending', time: Date.now() })
+        .then(() => {
+          alert("উইথড্র রিকোয়েস্ট পাঠানো হয়েছে!");
+          document.getElementById('withdrawModal').style.display = 'none';
+          document.getElementById('witAmount').value = '';
+          document.getElementById('witNumber').value = '';
+        });
     });
 
-    window.openModal = (id) => document.getElementById(id).style.display = 'flex';
-    window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+    // Chat Send
+    document.getElementById('sendChatBtn').addEventListener('click', () => {
+      const text = document.getElementById('chatInput').value.trim();
+      if(!text) return;
+      push(ref(db, 'chats/' + loggedUser), { sender: 'user', message: text, time: Date.now() })
+        .then(() => { document.getElementById('chatInput').value = ''; });
+    });
+
+    function listenUserChats(userId) {
+      onValue(ref(db, 'chats/' + userId), (snapshot) => {
+        const chatBox = document.getElementById('chatBox');
+        chatBox.innerHTML = '';
+        const data = snapshot.val();
+        if(!data) { chatBox.innerHTML = '<div class="chat-msg admin">হ্যালো!</div>'; return; }
+        for(let key in data) {
+          const msg = data[key];
+          chatBox.innerHTML += `<div class="chat-msg ${msg.sender === 'user' ? 'user' : 'admin'}">${msg.message}</div>`;
+        }
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+    }
   </script>
 </body>
 </html>
