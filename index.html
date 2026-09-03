@@ -267,13 +267,18 @@
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getDatabase, ref, onValue, push, set, get } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+    import { getDatabase, ref, onValue, push, set, get, update } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-database.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyASh4Og6vNlk6CCRtUep5y9etqcCxB-9iE",
+      authDomain: "obb-config-38c44.firebaseapp.com",
       databaseURL: "https://obb-config-38c44-default-rtdb.firebaseio.com",
-      projectId: "obb-config-38c44"
+      projectId: "obb-config-38c44",
+      storageBucket: "obb-config-38c44.firebasestorage.app",
+      messagingSenderId: "61885631586",
+      appId: "1:61885631586:web:7f107e3fc7096ddecdd53b",
+      measurementId: "G-GV7BBV5KSS"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -282,6 +287,7 @@
     let loggedUser = localStorage.getItem('logged_user');
     let allGames = {};
     let selectedCategory = 'hot';
+    let currentUserBalance = 0;
 
     if (loggedUser) {
       document.getElementById('authScreen').style.display = 'none';
@@ -378,7 +384,8 @@
     function loadUserBalance() {
       if(!loggedUser) return;
       onValue(ref(db, 'users/' + loggedUser + '/balance'), (snapshot) => {
-        document.getElementById('userBalance').innerText = (snapshot.val() || 0).toFixed(2);
+        currentUserBalance = snapshot.val() || 0;
+        document.getElementById('userBalance').innerText = currentUserBalance.toFixed(2);
       });
     }
 
@@ -428,15 +435,52 @@
         const card = document.createElement('div');
         card.className = 'game-card';
         card.addEventListener('click', () => {
-          document.getElementById('currentGameTitle').innerText = game.gameName;
-          document.getElementById('gameIframe').srcdoc = game.htmlCode;
-          document.getElementById('gameLauncher').style.display = 'flex';
+          launchGameWithBalance(game);
         });
         const cover = game.coverUrl ? game.coverUrl : 'https://via.placeholder.com/100x90/1a1b22/ff8c00?text=GAME';
         card.innerHTML = `<img src="${cover}"><div class="game-title">${game.gameName}</div>`;
         gameGrid.appendChild(card);
       }
     }
+
+    // Launch Game with Balance Sync
+    function launchGameWithBalance(game) {
+      document.getElementById('currentGameTitle').innerText = game.gameName;
+      const iframe = document.getElementById('gameIframe');
+      
+      let html = game.htmlCode || '';
+      
+      // Inject Main Balance bridge scripts into game HTML
+      const balanceScript = `
+        <script>
+          window.userBalance = ${currentUserBalance};
+          window.userId = "${loggedUser}";
+          
+          window.updateBalance = function(amount) {
+            window.parent.postMessage({ type: 'UPDATE_BALANCE', amount: amount }, '*');
+          };
+        <\/script>
+      `;
+
+      if (html.includes('<head>')) {
+        html = html.replace('<head>', '<head>' + balanceScript);
+      } else {
+        html = balanceScript + html;
+      }
+
+      iframe.srcdoc = html;
+      document.getElementById('gameLauncher').style.display = 'flex';
+    }
+
+    // Listen to iframe game balance updates
+    window.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'UPDATE_BALANCE' && loggedUser) {
+        const newBalance = parseFloat(event.data.amount);
+        if (!isNaN(newBalance)) {
+          update(ref(db, 'users/' + loggedUser), { balance: newBalance });
+        }
+      }
+    });
 
     document.getElementById('closeGameLauncherBtn').addEventListener('click', () => {
       document.getElementById('gameLauncher').style.display = 'none';
@@ -462,6 +506,8 @@
       const amount = parseFloat(document.getElementById('witAmount').value);
       const number = document.getElementById('witNumber').value.trim();
       if(!amount || !number) return alert("সব তথ্য দিন!");
+      if(amount > currentUserBalance) return alert("আপনার পর্যাপ্ত ব্যালেন্স নেই!");
+
       push(ref(db, 'withdrawals'), { userId: loggedUser, amount, number, status: 'pending', time: Date.now() })
         .then(() => {
           alert("উইথড্র রিকোয়েস্ট পাঠানো হয়েছে!");
