@@ -267,18 +267,19 @@
   </div>
 
   <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
-    import { getDatabase, ref, onValue, push, set, get, update } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue, push, set, get, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+    // আপনার দেওয়া নতুন Firebase Configuration
     const firebaseConfig = {
-      apiKey: "AIzaSyASh4Og6vNlk6CCRtUep5y9etqcCxB-9iE",
-      authDomain: "obb-config-38c44.firebaseapp.com",
-      databaseURL: "https://obb-config-38c44-default-rtdb.firebaseio.com",
-      projectId: "obb-config-38c44",
-      storageBucket: "obb-config-38c44.firebasestorage.app",
-      messagingSenderId: "61885631586",
-      appId: "1:61885631586:web:7f107e3fc7096ddecdd53b",
-      measurementId: "G-GV7BBV5KSS"
+      apiKey: "AIzaSyAyTOnCm5IuPcB-yvGjFl3KbwRVxNrcNSY",
+      authDomain: "ff-to-gaming-4ea1b.firebaseapp.com",
+      databaseURL: "https://ff-to-gaming-4ea1b-default-rtdb.firebaseio.com",
+      projectId: "ff-to-gaming-4ea1b",
+      storageBucket: "ff-to-gaming-4ea1b.appspot.com",
+      messagingSenderId: "816776130875",
+      appId: "1:816776130875:web:c3e7984e0de53cbd89871e",
+      measurementId: "G-N36W0TG2HD"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -297,7 +298,7 @@
       listenUserChats(loggedUser);
     }
 
-    // Auth Switch Buttons
+    // Auth Switch
     document.getElementById('loginTabBtn').addEventListener('click', () => {
       document.getElementById('loginForm').style.display = 'block';
       document.getElementById('registerForm').style.display = 'none';
@@ -312,7 +313,7 @@
       document.getElementById('loginTabBtn').classList.remove('active');
     });
 
-    // Register Handler
+    // Register
     document.getElementById('registerBtn').addEventListener('click', () => {
       const u = document.getElementById('regUsername').value.trim();
       const p = document.getElementById('regPassword').value.trim();
@@ -328,10 +329,10 @@
             document.getElementById('loginTabBtn').click();
           });
         }
-      });
+      }).catch(err => alert("ডাটাবেস কানেকশন এরর: " + err.message));
     });
 
-    // Login Handler
+    // Login
     document.getElementById('loginBtn').addEventListener('click', () => {
       const u = document.getElementById('loginUsername').value.trim();
       const p = document.getElementById('loginPassword').value.trim();
@@ -349,16 +350,16 @@
             alert("ভুল পাসওয়ার্ড!");
           }
         }
-      });
+      }).catch(err => alert("ডাটাবেস কানেকশন এরর: " + err.message));
     });
 
-    // Logout Handler
+    // Logout
     document.getElementById('logoutBtn').addEventListener('click', () => {
       localStorage.removeItem('logged_user');
       location.reload();
     });
 
-    // Bottom Navigation Switcher
+    // Bottom Navigation
     document.querySelectorAll('.nav-item').forEach(item => {
       item.addEventListener('click', () => {
         const targetId = item.getAttribute('data-target');
@@ -369,7 +370,7 @@
       });
     });
 
-    // Realtime Settings Sync
+    // Dynamic Settings Sync
     onValue(ref(db, 'settings'), (snapshot) => {
       const data = snapshot.val() || {};
       if(data.siteTitle) {
@@ -391,7 +392,7 @@
 
     document.getElementById('refreshBalanceBtn').addEventListener('click', loadUserBalance);
 
-    // Modal Controls
+    // Modals Controls
     document.getElementById('openDepositModalBtn').addEventListener('click', () => {
       document.getElementById('depositModal').style.display = 'flex';
     });
@@ -406,7 +407,7 @@
       document.getElementById('withdrawModal').style.display = 'none';
     });
 
-    // Category Selector
+    // Categories Selection
     document.querySelectorAll('.cat-item').forEach(item => {
       item.addEventListener('click', () => {
         document.querySelectorAll('.cat-item').forEach(el => el.classList.remove('active'));
@@ -416,7 +417,7 @@
       });
     });
 
-    // Game Lobby Render
+    // Game Lobby Realtime Render
     onValue(ref(db, 'games'), (snapshot) => {
       allGames = snapshot.val() || {};
       renderGameGrid();
@@ -443,14 +444,13 @@
       }
     }
 
-    // Launch Game with Balance Sync
+    // Launch Game with Balance Injection
     function launchGameWithBalance(game) {
       document.getElementById('currentGameTitle').innerText = game.gameName;
       const iframe = document.getElementById('gameIframe');
       
       let html = game.htmlCode || '';
       
-      // Inject Main Balance bridge scripts into game HTML
       const balanceScript = `
         <script>
           window.userBalance = ${currentUserBalance};
@@ -472,7 +472,7 @@
       document.getElementById('gameLauncher').style.display = 'flex';
     }
 
-    // Listen to iframe game balance updates
+    // Realtime Balance Sync Listener from Game iFrame
     window.addEventListener('message', (event) => {
       if (event.data && event.data.type === 'UPDATE_BALANCE' && loggedUser) {
         const newBalance = parseFloat(event.data.amount);
@@ -517,7 +517,7 @@
         });
     });
 
-    // Chat Send
+    // Live Chat Functionality
     document.getElementById('sendChatBtn').addEventListener('click', () => {
       const text = document.getElementById('chatInput').value.trim();
       if(!text) return;
