@@ -1,1 +1,544 @@
 
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="siteTitle">CV999 - VIP Gaming Platform</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
+    body { background-color: #08080a; color: #fff; padding-bottom: 70px; overflow-x: hidden; }
+
+    /* Auth Screen */
+    #authScreen {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #08080a; z-index: 99999; display: flex; justify-content: center; align-items: center; padding: 20px;
+    }
+    .auth-box {
+      background: #14151a; border: 1px solid #ff8c00; padding: 25px; border-radius: 12px; width: 100%; max-width: 380px; text-align: center;
+    }
+    .auth-logo { font-size: 26px; font-weight: 900; background: linear-gradient(45deg, #ffd700, #ff8c00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 15px; }
+    .tab-toggle { display: flex; margin-bottom: 15px; background: #0a0b0d; border-radius: 6px; padding: 3px; }
+    .tab-btn { flex: 1; background: none; border: none; color: #888; padding: 8px; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 12px; }
+    .tab-btn.active { background: #ff8c00; color: #000; }
+
+    /* Header */
+    .header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 10px 15px; background: rgba(20, 20, 25, 0.95);
+      backdrop-filter: blur(10px); border-bottom: 1px solid rgba(252, 163, 17, 0.2);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo-text {
+      font-size: 20px; font-weight: 900;
+      background: linear-gradient(45deg, #ffd700, #ff8c00);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      letter-spacing: 1px;
+    }
+    .balance-box {
+      display: flex; align-items: center; gap: 6px; background: #121318;
+      border: 1px solid rgba(255, 215, 0, 0.3); padding: 5px 12px; border-radius: 20px; font-size: 12px;
+    }
+    .action-btns { display: flex; gap: 6px; }
+    .top-btn {
+      background: linear-gradient(135deg, #ff8c00, #e65100); color: #fff;
+      border: none; padding: 6px 12px; border-radius: 15px; font-weight: bold; font-size: 11px; cursor: pointer;
+    }
+    .top-btn.withdraw { background: linear-gradient(135deg, #dc3545, #b02a37); }
+
+    /* Banner */
+    .banner-container { width: 100%; padding: 10px; }
+    .banner-img {
+      width: 100%; height: 140px; object-fit: cover; border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Category Nav */
+    .category-nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 0 10px 10px; }
+    .cat-item {
+      background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 8px; text-align: center; padding: 8px 0; color: #aaa; text-decoration: none; font-size: 11px; cursor: pointer;
+    }
+    .cat-item.active {
+      background: linear-gradient(180deg, rgba(255, 140, 0, 0.2), transparent);
+      border-color: #ff8c00; color: #ff8c00; font-weight: bold;
+    }
+    .cat-item i { display: block; font-size: 16px; margin-bottom: 2px; }
+
+    /* Game Lobby Grid */
+    .game-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 0 10px; }
+    .game-card {
+      background: #121318; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px;
+      overflow: hidden; cursor: pointer; transition: transform 0.2s;
+    }
+    .game-card:hover { border-color: #ff8c00; transform: translateY(-2px); }
+    .game-card img { width: 100%; height: 90px; object-fit: cover; display: block; }
+    .game-title {
+      font-size: 10px; text-align: center; padding: 5px 2px; background: #0b0c0f;
+      color: #ddd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+
+    /* View Sections */
+    .view-section { display: none; padding: 10px 15px; }
+    .view-section.active { display: block; }
+
+    /* Live Chat UI */
+    .chat-container { display: flex; flex-direction: column; height: calc(100vh - 130px); }
+    .chat-box {
+      flex: 1; background: #121318; border: 1px solid #222; border-radius: 8px;
+      padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px;
+    }
+    .chat-msg { padding: 8px 12px; border-radius: 6px; font-size: 12px; max-width: 80%; word-break: break-all; }
+    .chat-msg.user { background: #ff8c00; color: #000; align-self: flex-end; font-weight: bold; }
+    .chat-msg.admin { background: #22232a; color: #fff; align-self: flex-start; border: 1px solid #333; }
+    .chat-input-row { display: flex; gap: 6px; }
+
+    /* Game Launcher Fullscreen */
+    .game-launcher {
+      display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #000; z-index: 9999; flex-direction: column;
+    }
+    .game-launcher-header {
+      height: 45px; background: #111; display: flex; justify-content: space-between;
+      align-items: center; padding: 0 15px; border-bottom: 1px solid #222;
+    }
+    .game-frame { width: 100%; height: calc(100vh - 45px); border: none; }
+
+    /* Modals */
+    .modal {
+      display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center;
+    }
+    .modal-content {
+      background: #14151a; padding: 20px; border-radius: 12px; width: 90%; max-width: 350px;
+      border: 1px solid #ff8c00; position: relative;
+    }
+    .close-btn { position: absolute; right: 15px; top: 12px; color: #888; font-size: 20px; cursor: pointer; }
+    .notice-box {
+      background: rgba(255, 140, 0, 0.1); padding: 10px; border-radius: 8px; text-align: center;
+      margin: 10px 0; border: 1px dashed #ff8c00; color: #ffd700; font-size: 12px; font-weight: bold;
+    }
+    .input-field { width: 100%; padding: 10px; margin: 6px 0; background: #0a0b0d; border: 1px solid #282930; color: #fff; border-radius: 6px; outline: none; font-size: 13px; }
+    .submit-btn { width: 100%; padding: 10px; background: linear-gradient(90deg, #ff8c00, #e65100); border: none; color: #fff; font-weight: bold; border-radius: 6px; margin-top: 8px; cursor: pointer; font-size: 13px; }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; width: 100%; height: 55px;
+      background: rgba(15, 16, 20, 0.95); border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex; justify-content: space-around; align-items: center; z-index: 1000;
+    }
+    .nav-item { color: #666; font-size: 10px; text-decoration: none; text-align: center; cursor: pointer; }
+    .nav-item.active { color: #ff8c00; font-weight: bold; }
+    .nav-item i { font-size: 16px; display: block; margin-bottom: 2px; }
+  </style>
+</head>
+<body>
+
+  <!-- Auth Screen -->
+  <div id="authScreen">
+    <div class="auth-box">
+      <div class="auth-logo" id="authLogoText">CV999</div>
+      <div class="tab-toggle">
+        <button class="tab-btn active" id="loginTabBtn" type="button">লগইন</button>
+        <button class="tab-btn" id="registerTabBtn" type="button">রেজিস্ট্রেশন</button>
+      </div>
+
+      <div id="loginForm">
+        <input type="text" id="loginUsername" class="input-field" placeholder="ইউজারনেম বা মোবাইল নম্বর">
+        <input type="password" id="loginPassword" class="input-field" placeholder="পাসওয়ার্ড">
+        <button class="submit-btn" id="loginBtn" type="button">লগইন করুন</button>
+      </div>
+
+      <div id="registerForm" style="display:none;">
+        <input type="text" id="regUsername" class="input-field" placeholder="ইউজারনেম দিন">
+        <input type="password" id="regPassword" class="input-field" placeholder="পাসওয়ার্ড দিন">
+        <button class="submit-btn" id="registerBtn" type="button">একাউন্ট তৈরি করুন</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main App Wrapper -->
+  <div id="mainAppContent" style="display:none;">
+    <div class="header">
+      <div class="logo-text" id="displayLogo">CV999</div>
+      <div class="balance-box">
+        <i class="fa-solid fa-coins" style="color: #ffd700;"></i>
+        <span>৳ <b id="userBalance">0.00</b></span>
+        <i class="fa-solid fa-rotate-right" id="refreshBalanceBtn" style="color:#ff8c00; cursor:pointer;" title="রিফ্রেশ"></i>
+      </div>
+      <div class="action-btns">
+        <button class="top-btn" id="openDepositModalBtn" type="button">ডিপোজিট</button>
+        <button class="top-btn withdraw" id="openWithdrawModalBtn" type="button">উইথড্র</button>
+      </div>
+    </div>
+
+    <!-- Home View -->
+    <div id="homeView" class="view-section active">
+      <div class="banner-container">
+        <img id="mainBanner" src="https://via.placeholder.com/400x140/111/ff8c00?text=VIP+Gaming+Banner" class="banner-img">
+      </div>
+
+      <div class="category-nav">
+        <div class="cat-item active" data-cat="hot"><i class="fa-solid fa-fire"></i>হট গেম</div>
+        <div class="cat-item" data-cat="slot"><i class="fa-solid fa-gamepad"></i>স্লট</div>
+        <div class="cat-item" data-cat="fish"><i class="fa-solid fa-fish-fins"></i>ফিশিং</div>
+        <div class="cat-item" data-cat="casino"><i class="fa-solid fa-dice"></i>ক্যাসিনো</div>
+      </div>
+
+      <div class="game-grid" id="gameGrid"></div>
+    </div>
+
+    <!-- Chat View -->
+    <div id="chatView" class="view-section">
+      <div class="chat-container">
+        <h3 style="color:#ff8c00; margin-bottom:8px; text-align:center; font-size:14px;"><i class="fa-solid fa-headset"></i> লাইভ কাস্টমার কেয়ার</h3>
+        <div class="chat-box" id="chatBox">
+          <div class="chat-msg admin">হ্যালো! আপনার যেকোনো সহায়তায় এখানে মেসেজ করুন।</div>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" id="chatInput" class="input-field" placeholder="মেসেজ লিখুন..." style="margin:0;">
+          <button class="submit-btn" id="sendChatBtn" style="width: 75px; margin-top:0;" type="button">পাঠান</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Promo View -->
+    <div id="promoView" class="view-section">
+      <h3 style="color:#ff8c00; margin-bottom:10px;">বিশেষ অফার</h3>
+      <div style="background:#121318; padding:15px; border-radius:8px; border:1px solid #222; font-size:13px;">
+        <p>🔥 প্রতিটি ডিপোজিটে পান ২০% ইনস্ট্যান্ট বোনাস!</p>
+      </div>
+    </div>
+
+    <!-- Profile View -->
+    <div id="profileView" class="view-section">
+      <h3 style="color:#ff8c00; margin-bottom:10px;">ইউজার প্রোফাইল</h3>
+      <div style="background:#121318; padding:15px; border-radius:8px; border:1px solid #222; font-size:13px;">
+        <p><strong>ইউজারনেম:</strong> <span id="profileUserId">-</span></p>
+        <p style="margin-top:8px;"><strong>স্ট্যাটাস:</strong> <span style="color:#28a745;">অ্যাক্টিভ ✅</span></p>
+        <button id="logoutBtn" style="background:#dc3545; color:#fff; border:none; padding:8px 12px; border-radius:6px; margin-top:15px; width:100%; font-weight:bold; cursor:pointer;" type="button">লগআউট করুন</button>
+      </div>
+    </div>
+
+    <!-- Game Launcher -->
+    <div class="game-launcher" id="gameLauncher">
+      <div class="game-launcher-header">
+        <span style="color:#ff8c00; font-weight:bold; font-size:13px;" id="currentGameTitle">Gaming Screen</span>
+        <button id="closeGameLauncherBtn" style="background:#dc3545; color:#fff; border:none; padding:4px 10px; border-radius:4px; font-weight:bold; cursor:pointer; font-size:11px;" type="button">
+          <i class="fa-solid fa-xmark"></i> বের হন
+        </button>
+      </div>
+      <iframe class="game-frame" id="gameIframe"></iframe>
+    </div>
+
+    <!-- Deposit Modal -->
+    <div class="modal" id="depositModal">
+      <div class="modal-content">
+        <span class="close-btn" id="closeDepositModalBtn">&times;</span>
+        <h3 style="color:#ff8c00; text-align:center; font-size:15px; margin-bottom:8px;">ডিপোজিট রিকোয়েস্ট</h3>
+        <div class="notice-box">
+          পেমেন্ট নাম্বার:<br>
+          <span id="displayAdminNumber" style="font-size:16px;">লোড হচ্ছে...</span>
+        </div>
+        <input type="number" id="depAmount" class="input-field" placeholder="টাকার পরিমাণ (৳)">
+        <input type="text" id="depTrx" class="input-field" placeholder="Transaction ID">
+        <button class="submit-btn" id="submitDepositBtn" type="button">ডিপোজিট জমা দিন</button>
+      </div>
+    </div>
+
+    <!-- Withdraw Modal -->
+    <div class="modal" id="withdrawModal">
+      <div class="modal-content">
+        <span class="close-btn" id="closeWithdrawModalBtn">&times;</span>
+        <h3 style="color:#ff8c00; text-align:center; font-size:15px; margin-bottom:8px;">উইথড্র রিকোয়েস্ট</h3>
+        <input type="number" id="witAmount" class="input-field" placeholder="উইথড্র পরিমাণ (৳)">
+        <input type="text" id="witNumber" class="input-field" placeholder="বিকাশ/নগদ নম্বর">
+        <button class="submit-btn" id="submitWithdrawBtn" type="button">উইথড্র পাঠান</button>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+      <div class="nav-item active" data-target="homeView"><i class="fa-solid fa-house"></i>হোম</div>
+      <div class="nav-item" data-target="promoView"><i class="fa-solid fa-gift"></i>প্রমোশন</div>
+      <div class="nav-item" data-target="chatView"><i class="fa-solid fa-headset"></i>সেবা</div>
+      <div class="nav-item" data-target="profileView"><i class="fa-solid fa-user"></i>প্রোফাইল</div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue, push, set, get, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAyTOnCm5IuPcB-yvGjFl3KbwRVxNrcNSY",
+      authDomain: "ff-to-gaming-4ea1b.firebaseapp.com",
+      databaseURL: "https://ff-to-gaming-4ea1b-default-rtdb.firebaseio.com",
+      projectId: "ff-to-gaming-4ea1b",
+      storageBucket: "ff-to-gaming-4ea1b.appspot.com",
+      messagingSenderId: "816776130875",
+      appId: "1:816776130875:web:c3e7984e0de53cbd89871e",
+      measurementId: "G-N36W0TG2HD"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let loggedUser = localStorage.getItem('logged_user');
+    let allGames = {};
+    let selectedCategory = 'hot';
+    let currentUserBalance = 0;
+
+    // Check login state
+    if (loggedUser) {
+      document.getElementById('authScreen').style.display = 'none';
+      document.getElementById('mainAppContent').style.display = 'block';
+      document.getElementById('profileUserId').innerText = loggedUser;
+      loadUserBalance();
+      listenUserChats(loggedUser);
+    }
+
+    // Toggle Tab Login/Reg
+    document.getElementById('loginTabBtn').onclick = () => {
+      document.getElementById('loginForm').style.display = 'block';
+      document.getElementById('registerForm').style.display = 'none';
+      document.getElementById('loginTabBtn').classList.add('active');
+      document.getElementById('registerTabBtn').classList.remove('active');
+    };
+
+    document.getElementById('registerTabBtn').onclick = () => {
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('registerForm').style.display = 'block';
+      document.getElementById('registerTabBtn').classList.add('active');
+      document.getElementById('loginTabBtn').classList.remove('active');
+    };
+
+    // Register
+    document.getElementById('registerBtn').onclick = () => {
+      const u = document.getElementById('regUsername').value.trim();
+      const p = document.getElementById('regPassword').value.trim();
+      if(!u || !p) return alert("ইউজারনেম এবং পাসওয়ার্ড দিন!");
+
+      const userRef = ref(db, 'users/' + u);
+      get(userRef).then((snap) => {
+        if(snap.exists()) {
+          alert("এই ইউজারনেমটি ইতিমধ্যে ব্যবহৃত হয়েছে!");
+        } else {
+          set(userRef, { password: p, balance: 0 }).then(() => {
+            alert("সফলভাবে একাউন্ট তৈরি হয়েছে! এখন লগইন করুন।");
+            document.getElementById('loginTabBtn').click();
+          }).catch(e => alert(e.message));
+        }
+      }).catch(e => alert("Database Error: " + e.message));
+    };
+
+    // Login
+    document.getElementById('loginBtn').onclick = () => {
+      const u = document.getElementById('loginUsername').value.trim();
+      const p = document.getElementById('loginPassword').value.trim();
+      if(!u || !p) return alert("সব তথ্য পূরণ করুন!");
+
+      get(ref(db, 'users/' + u)).then((snap) => {
+        if(!snap.exists()) {
+          alert("একাউন্ট পাওয়া যায়নি! দয়া করে রেজিস্ট্রেশন করুন।");
+        } else {
+          const data = snap.val();
+          if(data.password === p) {
+            localStorage.setItem('logged_user', u);
+            location.reload();
+          } else {
+            alert("ভুল পাসওয়ার্ড!");
+          }
+        }
+      }).catch(e => alert("Database Error: " + e.message));
+    };
+
+    // Logout
+    document.getElementById('logoutBtn').onclick = () => {
+      localStorage.removeItem('logged_user');
+      location.reload();
+    };
+
+    // Bottom Navigation
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.onclick = () => {
+        const targetId = item.getAttribute('data-target');
+        document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        document.getElementById(targetId).classList.add('active');
+        item.classList.add('active');
+      };
+    });
+
+    // Load Settings
+    onValue(ref(db, 'settings'), (snapshot) => {
+      const data = snapshot.val() || {};
+      if(data.siteTitle) {
+        document.getElementById('siteTitle').innerText = data.siteTitle;
+        document.getElementById('displayLogo').innerText = data.siteTitle;
+        document.getElementById('authLogoText').innerText = data.siteTitle;
+      }
+      if(data.bannerUrl) document.getElementById('mainBanner').src = data.bannerUrl;
+      if(data.adminNumber) document.getElementById('displayAdminNumber').innerText = data.adminNumber;
+    });
+
+    // Balance Loader
+    function loadUserBalance() {
+      if(!loggedUser) return;
+      onValue(ref(db, 'users/' + loggedUser + '/balance'), (snapshot) => {
+        currentUserBalance = snapshot.val() || 0;
+        document.getElementById('userBalance').innerText = currentUserBalance.toFixed(2);
+      });
+    }
+
+    document.getElementById('refreshBalanceBtn').onclick = loadUserBalance;
+
+    // Modals Controls
+    document.getElementById('openDepositModalBtn').onclick = () => {
+      document.getElementById('depositModal').style.display = 'flex';
+    };
+    document.getElementById('closeDepositModalBtn').onclick = () => {
+      document.getElementById('depositModal').style.display = 'none';
+    };
+
+    document.getElementById('openWithdrawModalBtn').onclick = () => {
+      document.getElementById('withdrawModal').style.display = 'flex';
+    };
+    document.getElementById('closeWithdrawModalBtn').onclick = () => {
+      document.getElementById('withdrawModal').style.display = 'none';
+    };
+
+    // Category Selector
+    document.querySelectorAll('.cat-item').forEach(item => {
+      item.onclick = () => {
+        document.querySelectorAll('.cat-item').forEach(el => el.classList.remove('active'));
+        item.classList.add('active');
+        selectedCategory = item.getAttribute('data-cat');
+        renderGameGrid();
+      };
+    });
+
+    // Games Loader
+    onValue(ref(db, 'games'), (snapshot) => {
+      allGames = snapshot.val() || {};
+      renderGameGrid();
+    });
+
+    function renderGameGrid() {
+      const gameGrid = document.getElementById('gameGrid');
+      gameGrid.innerHTML = '';
+      if(!allGames) return;
+
+      for (let id in allGames) {
+        const game = allGames[id];
+        const category = game.category || 'hot';
+        if(selectedCategory !== 'hot' && category !== selectedCategory) continue;
+
+        const card = document.createElement('div');
+        card.className = 'game-card';
+        card.onclick = () => launchGameWithBalance(game);
+        
+        const cover = game.coverUrl ? game.coverUrl : 'https://via.placeholder.com/100x90/1a1b22/ff8c00?text=GAME';
+        card.innerHTML = `<img src="${cover}"><div class="game-title">${game.gameName}</div>`;
+        gameGrid.appendChild(card);
+      }
+    }
+
+    // Launch Game
+    function launchGameWithBalance(game) {
+      document.getElementById('currentGameTitle').innerText = game.gameName;
+      const iframe = document.getElementById('gameIframe');
+      
+      let html = game.htmlCode || '';
+      const balanceScript = `
+        <script>
+          window.userBalance = ${currentUserBalance};
+          window.userId = "${loggedUser}";
+          
+          window.updateBalance = function(amount) {
+            window.parent.postMessage({ type: 'UPDATE_BALANCE', amount: amount }, '*');
+          };
+        <\/script>
+      `;
+
+      if (html.includes('<head>')) {
+        html = html.replace('<head>', '<head>' + balanceScript);
+      } else {
+        html = balanceScript + html;
+      }
+
+      iframe.srcdoc = html;
+      document.getElementById('gameLauncher').style.display = 'flex';
+    }
+
+    // Game Message Listener
+    window.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'UPDATE_BALANCE' && loggedUser) {
+        const newBalance = parseFloat(event.data.amount);
+        if (!isNaN(newBalance)) {
+          update(ref(db, 'users/' + loggedUser), { balance: newBalance });
+        }
+      }
+    });
+
+    document.getElementById('closeGameLauncherBtn').onclick = () => {
+      document.getElementById('gameLauncher').style.display = 'none';
+      document.getElementById('gameIframe').srcdoc = '';
+    };
+
+    // Deposit Submit
+    document.getElementById('submitDepositBtn').onclick = () => {
+      const amount = parseFloat(document.getElementById('depAmount').value);
+      const trx = document.getElementById('depTrx').value.trim();
+      if(!amount || !trx) return alert("সব তথ্য সঠিকভাবে দিন!");
+      
+      push(ref(db, 'deposits'), { userId: loggedUser, amount, trxId: trx, status: 'pending', time: Date.now() })
+        .then(() => {
+          alert("ডিপোজিট রিকোয়েস্ট জমা হয়েছে!");
+          document.getElementById('depositModal').style.display = 'none';
+          document.getElementById('depAmount').value = '';
+          document.getElementById('depTrx').value = '';
+        });
+    };
+
+    // Withdraw Submit
+    document.getElementById('submitWithdrawBtn').onclick = () => {
+      const amount = parseFloat(document.getElementById('witAmount').value);
+      const number = document.getElementById('witNumber').value.trim();
+      if(!amount || !number) return alert("সব তথ্য সঠিকভাবে দিন!");
+      if(amount > currentUserBalance) return alert("আপনার পর্যাপ্ত ব্যালেন্স নেই!");
+
+      push(ref(db, 'withdrawals'), { userId: loggedUser, amount, number, status: 'pending', time: Date.now() })
+        .then(() => {
+          alert("উইথড্র রিকোয়েস্ট পাঠানো হয়েছে!");
+          document.getElementById('withdrawModal').style.display = 'none';
+          document.getElementById('witAmount').value = '';
+          document.getElementById('witNumber').value = '';
+        });
+    };
+
+    // Chat
+    document.getElementById('sendChatBtn').onclick = () => {
+      const text = document.getElementById('chatInput').value.trim();
+      if(!text) return;
+      push(ref(db, 'chats/' + loggedUser), { sender: 'user', message: text, time: Date.now() })
+        .then(() => { document.getElementById('chatInput').value = ''; });
+    };
+
+    function listenUserChats(userId) {
+      onValue(ref(db, 'chats/' + userId), (snapshot) => {
+        const chatBox = document.getElementById('chatBox');
+        chatBox.innerHTML = '';
+        const data = snapshot.val();
+        if(!data) { chatBox.innerHTML = '<div class="chat-msg admin">হ্যালো! আপনার যেকোনো সহায়তায় মেসেজ দিন।</div>'; return; }
+        for(let key in data) {
+          const msg = data[key];
+          chatBox.innerHTML += `<div class="chat-msg ${msg.sender === 'user' ? 'user' : 'admin'}">${msg.message}</div>`;
+        }
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+    }
+  </script>
+</body>
+</html>
