@@ -2,320 +2,503 @@
 <html lang="bn">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Admin Control Panel - CV999</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, sans-serif; }
-    body { background: #0c0d10; color: #fff; padding: 15px; }
-    h1 { color: #ff8c00; text-align: center; margin-bottom: 20px; font-size: 20px; }
-    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 15px; }
-    .card { background: #14151b; border: 1px solid #ff8c00; padding: 15px; border-radius: 8px; }
-    h2 { color: #ff8c00; font-size: 14px; margin-bottom: 12px; border-bottom: 1px solid #222; padding-bottom: 6px; }
-    label { font-size: 11px; color: #aaa; display: block; margin-top: 6px; }
-    input[type="text"], input[type="number"], input[type="url"], select, textarea {
-      width: 100%; padding: 8px; margin: 4px 0 10px; background: #0a0b0d; border: 1px solid #2a2b32; color: #fff; border-radius: 4px; font-size: 12px;
-    }
-    textarea { height: 100px; resize: vertical; font-family: monospace; }
-    button { padding: 8px 12px; background: linear-gradient(90deg, #ff8c00, #e65100); border: none; color: #fff; border-radius: 4px; font-weight: bold; cursor: pointer; width: 100%; font-size: 12px; }
-    .btn-green { background: #28a745; width: auto; padding: 5px 10px; margin-right: 4px; }
-    .btn-red { background: #dc3545; width: auto; padding: 5px 10px; }
-    .item-list { list-style: none; padding: 0; max-height: 200px; overflow-y: auto; }
-    .item-list li { background: #1c1d24; padding: 8px; margin-bottom: 6px; border-radius: 4px; font-size: 11px; border: 1px solid #2a2b32; }
-    .chat-user-btn { background: #2563eb; margin-bottom: 4px; padding: 6px; text-align: left; border-radius: 4px; cursor: pointer; font-size: 11px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #0d0e12; color: #fff; padding: 15px; }
+    
+    /* Header & Navbar */
+    .admin-header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #14151a; border-radius: 8px; border: 1px solid #ff8c00; margin-bottom: 20px; }
+    .admin-title { font-size: 20px; font-weight: bold; color: #ff8c00; }
+    
+    .nav-tabs { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 20px; padding-bottom: 5px; }
+    .tab-btn { background: #181920; border: 1px solid #333; color: #aaa; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; white-space: nowrap; }
+    .tab-btn.active { background: #ff8c00; color: #000; border-color: #ff8c00; }
+    
+    /* Stats Section */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
+    .stat-card { background: #14151a; padding: 15px; border-radius: 8px; border-left: 4px solid #ff8c00; text-align: center; }
+    .stat-card h4 { color: #888; font-size: 12px; margin-bottom: 5px; }
+    .stat-card p { font-size: 22px; font-weight: bold; color: #ffd700; }
+    
+    /* Panels */
+    .panel { display: none; background: #14151a; padding: 20px; border-radius: 8px; border: 1px solid #222; margin-bottom: 20px; }
+    .panel.active { display: block; }
+    .panel-title { font-size: 16px; color: #ff8c00; margin-bottom: 15px; border-bottom: 1px solid #222; padding-bottom: 8px; }
+
+    /* Tables */
+    .data-table-wrapper { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; text-align: left; }
+    th, td { padding: 12px; border-bottom: 1px solid #222; }
+    th { background: #1c1d24; color: #ff8c00; }
+    
+    /* Buttons & Inputs */
+    .btn { padding: 6px 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; margin-right: 4px; }
+    .btn-success { background: #28a745; color: #fff; }
+    .btn-danger { background: #dc3545; color: #fff; }
+    .btn-primary { background: #ff8c00; color: #000; }
+    
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 12px; color: #aaa; margin-bottom: 5px; }
+    .input-field { width: 100%; padding: 10px; background: #0a0b0d; border: 1px solid #333; color: #fff; border-radius: 6px; font-size: 13px; outline: none; }
+    textarea.input-field { resize: vertical; min-height: 80px; }
+
+    /* Admin Chat UI */
+    .chat-user-list { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 15px; padding-bottom: 5px; }
+    .user-chip { background: #1f2029; padding: 8px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 1px solid #333; white-space: nowrap; }
+    .user-chip.active { border-color: #ff8c00; background: rgba(255, 140, 0, 0.2); color: #ff8c00; font-weight: bold; }
+    .admin-chat-box { height: 250px; background: #0a0b0d; border: 1px solid #222; border-radius: 6px; padding: 10px; overflow-y: auto; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
+    .msg { max-width: 75%; padding: 8px 12px; border-radius: 6px; font-size: 12px; }
+    .msg.user { background: #22232a; color: #fff; align-self: flex-start; }
+    .msg.admin { background: #ff8c00; color: #000; font-weight: bold; align-self: flex-end; }
   </style>
 </head>
 <body>
 
-  <h1>👑 এডমিন কন্ট্রোল প্যানেল</h1>
+  <div class="admin-header">
+    <div class="admin-title"><i class="fa-solid fa-user-shield"></i> CV999 Admin Control Panel</div>
+  </div>
 
-  <div class="grid">
-    <!-- ১. সাইট সেটিংস -->
-    <div class="card">
-      <h2>🌐 সাইট সেটিংস, নাম ও ব্যানার</h2>
-      <label>সাইটের নাম (Site Name)</label>
-      <input type="text" id="siteTitleInput" placeholder="CV999">
-      <label>পেমেন্ট নম্বর</label>
-      <input type="text" id="adminNumberInput" placeholder="017xxxxxxxx">
-      <label>ব্যানার ইমেজ URL</label>
-      <input type="url" id="bannerUrlInput" placeholder="https://...">
-      <button id="saveSettingsBtn" type="button">সেটিংস আপডেট করুন</button>
+  <!-- Dashboard Quick Stats -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <h4>মোট নিবন্ধিত ইউজার</h4>
+      <p id="statTotalUsers">0</p>
+    </div>
+    <div class="stat-card">
+      <h4>পেন্ডিং ডিপোজিট</h4>
+      <p id="statPendingDep">0</p>
+    </div>
+    <div class="stat-card">
+      <h4>পেন্ডিং উইথড্র</h4>
+      <p id="statPendingWit">0</p>
+    </div>
+  </div>
+
+  <!-- Nav Tabs -->
+  <div class="nav-tabs">
+    <button class="tab-btn active" data-panel="depositsPanel"><i class="fa-solid fa-wallet"></i> ডিপোজিট রিকোয়েস্ট</button>
+    <button class="tab-btn" data-panel="withdrawalsPanel"><i class="fa-solid fa-money-bill-transfer"></i> উইথড্র রিকোয়েস্ট</button>
+    <button class="tab-btn" data-panel="usersPanel"><i class="fa-solid fa-users"></i> ইউজার ম্যানেজমেন্ট</button>
+    <button class="tab-btn" data-panel="gamesPanel"><i class="fa-solid fa-gamepad"></i> গেম আপলোড/কন্ট্রোল</button>
+    <button class="tab-btn" data-panel="chatsPanel"><i class="fa-solid fa-comments"></i> কাস্টমার সাপোর্ট চ্যাট</button>
+    <button class="tab-btn" data-panel="settingsPanel"><i class="fa-solid fa-gear"></i> সাইট সেটিংস</button>
+  </div>
+
+  <!-- Deposits Panel -->
+  <div id="depositsPanel" class="panel active">
+    <div class="panel-title">ডিপোজিট রিকোয়েস্টসমূহ</div>
+    <div class="data-table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>ইউজার</th>
+            <th>পরিমাণ (৳)</th>
+            <th>TrxID</th>
+            <th>সময়</th>
+            <th>স্ট্যাটাস</th>
+            <th>অ্যাকশন</th>
+          </tr>
+        </thead>
+        <tbody id="depositTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Withdrawals Panel -->
+  <div id="withdrawalsPanel" class="panel">
+    <div class="panel-title">উইথড্র রিকোয়েস্টসমূহ</div>
+    <div class="data-table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>ইউজার</th>
+            <th>পরিমাণ (৳)</th>
+            <th>নম্বর</th>
+            <th>সময়</th>
+            <th>স্ট্যাটাস</th>
+            <th>অ্যাকশন</th>
+          </tr>
+        </thead>
+        <tbody id="withdrawTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Users Panel -->
+  <div id="usersPanel" class="panel">
+    <div class="panel-title">ইউজার তালিকা ও ব্যালেন্স কন্ট্রোল</div>
+    <div class="data-table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>ইউজারনেম</th>
+            <th>বর্তমান ব্যালেন্স</th>
+            <th>পাসওয়ার্ড</th>
+            <th>ব্যালেন্স পরিবর্তন করুন</th>
+          </tr>
+        </thead>
+        <tbody id="usersTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Games Panel -->
+  <div id="gamesPanel" class="panel">
+    <div class="panel-title">নতুন গেম যুক্ত করুন (HTML Code Injection)</div>
+    <div style="max-width: 600px;">
+      <div class="form-group">
+        <label>গেমের নাম</label>
+        <input type="text" id="gameNameInput" class="input-field" placeholder="যেমন: Ludo Classic">
+      </div>
+      <div class="form-group">
+        <label>ক্যাটাগরি</label>
+        <select id="gameCategorySelect" class="input-field">
+          <option value="hot">হট গেম (Hot)</option>
+          <option value="slot">স্লট (Slot)</option>
+          <option value="fish">ফিশিং (Fish)</option>
+          <option value="casino">ক্যাসিনো (Casino)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>কভার ইমেজের URL (Thumbnail)</label>
+        <input type="text" id="gameCoverInput" class="input-field" placeholder="https://example.com/image.jpg">
+      </div>
+      <div class="form-group">
+        <label>গেমের HTML ফাইল/কোড (Paste Full HTML Code)</label>
+        <textarea id="gameHtmlInput" class="input-field" placeholder="এখানে আপনার গেমের সম্পূর্ণ HTML কোড পেস্ট করুন..."></textarea>
+      </div>
+      <button class="btn btn-primary" id="saveGameBtn" style="padding: 10px 20px;">গেম আপলোড করুন</button>
     </div>
 
-    <!-- ২. ম্যানুয়াল ব্যালেন্স অ্যাডজাস্টমেন্ট -->
-    <div class="card">
-      <h2>💳 ইউজারের ব্যালেন্স পরিবর্তন করুন</h2>
-      <label>ইউজারনেম:</label>
-      <input type="text" id="adjustUsernameInput" placeholder="ইউজারনেম লিখুন">
-      <label>নতুন ব্যালেন্স (৳):</label>
-      <input type="number" id="adjustBalanceInput" placeholder="যেমন: 500">
-      <button id="updateUserBalanceBtn" type="button">ব্যালেন্স আপডেট করুন</button>
+    <div class="panel-title" style="margin-top: 30px;">বিদ্যমান গেমের তালিকা</div>
+    <div class="data-table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>গেমের নাম</th>
+            <th>ক্যাটাগরি</th>
+            <th>অ্যাকশন</th>
+          </tr>
+        </thead>
+        <tbody id="gamesTableBody"></tbody>
+      </table>
     </div>
+  </div>
 
-    <!-- ৩. গেম যোগ করুন -->
-    <div class="card">
-      <h2>🎮 গেমের HTML পেস্ট করে লবিতে যোগ করুন</h2>
-      <label>গেমের নাম:</label>
-      <input type="text" id="gameNameInput" placeholder="যেমন: Ludo / Slot">
-      <label>ক্যাটাগরি:</label>
-      <select id="gameCategorySelect">
-        <option value="hot">হট গেম</option>
-        <option value="slot">স্লট</option>
-        <option value="fish">ফিশিং</option>
-        <option value="casino">ক্যাসিনো</option>
-      </select>
-      <label>কভার ছবির URL:</label>
-      <input type="url" id="gameCoverInput" placeholder="https://...">
-      <label>Index.html কোড পেস্ট করুন:</label>
-      <textarea id="gameHtmlCodeInput" placeholder="<!DOCTYPE html>..."></textarea>
-      <button id="publishGameBtn" type="button">লবিতে পাবলিশ করুন</button>
-    </div>
-
-    <!-- ৪. ডিপোজিট অ্যাপ্রুভাল -->
-    <div class="card">
-      <h2>💰 ডিপোজিট ম্যানেজমেন্ট</h2>
-      <ul class="item-list" id="depositList"><li>লোড হচ্ছে...</li></ul>
-    </div>
-
-    <!-- ৫. উইথড্র অ্যাপ্রুভাল -->
-    <div class="card">
-      <h2>💸 উইথড্র ম্যানেজমেন্ট</h2>
-      <ul class="item-list" id="withdrawList"><li>লোড হচ্ছে...</li></ul>
-    </div>
-
-    <!-- ৬. লাইভ চ্যাট সাপোর্ট -->
-    <div class="card">
-      <h2>💬 লাইভ চ্যাট সাপোর্ট</h2>
-      <div id="chatUserList" style="max-height: 120px; overflow-y: auto; margin-bottom: 8px;"><div style="font-size:11px; color:#aaa;">কোনো চ্যাট নেই।</div></div>
-      <div id="activeChatBox" style="background:#0a0b0d; padding:8px; border-radius:4px; height:100px; overflow-y:auto; display:none; font-size:11px; margin-bottom:6px;"></div>
-      <div id="adminChatInputRow" style="display:none; gap:4px;">
-        <input type="text" id="adminReplyInput" placeholder="উত্তর লিখুন..." style="margin:0;">
-        <button id="sendAdminReplyBtn" style="width:60px;" type="button">পাঠান</button>
+  <!-- Chats Panel -->
+  <div id="chatsPanel" class="panel">
+    <div class="panel-title">ইউজার লাইভ চ্যাট সাপোর্ট</div>
+    <div class="chat-user-list" id="chatUserList"></div>
+    <div id="activeChatContainer" style="display:none;">
+      <h4 style="font-size: 13px; color:#ff8c00; margin-bottom:5px;">মেসেজ করছেন: <span id="activeChatUser"></span></h4>
+      <div class="admin-chat-box" id="adminChatBox"></div>
+      <div style="display: flex; gap: 8px;">
+        <input type="text" id="adminChatInput" class="input-field" placeholder="রিপ্লাই লিখুন...">
+        <button class="btn btn-primary" id="sendAdminReplyBtn">পাঠান</button>
       </div>
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-app.js";
-    import { getDatabase, ref, set, get, push, onValue } from "https://www.gstatic.com/firebasejs/10.0.0/firebase-database.js";
+  <!-- Settings Panel -->
+  <div id="settingsPanel" class="panel">
+    <div class="panel-title">প্লাটফর্মের সাধারণ সেটিংস</div>
+    <div style="max-width: 500px;">
+      <div class="form-group">
+        <label>সাইটের নাম (Website Title / Logo)</label>
+        <input type="text" id="settingSiteTitle" class="input-field" placeholder="CV999">
+      </div>
+      <div class="form-group">
+        <label>অ্যাডমিন পেমেন্ট নাম্বার (ডিপোজিট নোটিশে দেখানোর জন্য)</label>
+        <input type="text" id="settingAdminNumber" class="input-field" placeholder="017XXXXXXXX">
+      </div>
+      <div class="form-group">
+        <label>মূল ব্যানার পিকচার URL</label>
+        <input type="text" id="settingBannerUrl" class="input-field" placeholder="https://example.com/banner.jpg">
+      </div>
+      <button class="btn btn-primary" id="saveSettingsBtn" style="padding: 10px 20px;">সেটিংস সেভ করুন</button>
+    </div>
+  </div>
 
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue, set, update, remove, push, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // আপনার নতুন Firebase Config
     const firebaseConfig = {
-      apiKey: "AIzaSyASh4Og6vNlk6CCRtUep5y9etqcCxB-9iE",
-      databaseURL: "https://obb-config-38c44-default-rtdb.firebaseio.com",
-      projectId: "obb-config-38c44"
+      apiKey: "AIzaSyAyTOnCm5IuPcB-yvGjFl3KbwRVxNrcNSY",
+      authDomain: "ff-to-gaming-4ea1b.firebaseapp.com",
+      databaseURL: "https://ff-to-gaming-4ea1b-default-rtdb.firebaseio.com",
+      projectId: "ff-to-gaming-4ea1b",
+      storageBucket: "ff-to-gaming-4ea1b.appspot.com",
+      messagingSenderId: "816776130875",
+      appId: "1:816776130875:web:c3e7984e0de53cbd89871e",
+      measurementId: "G-N36W0TG2HD"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    let selectedChatUser = null;
+    let currentSelectedChatUser = null;
 
-    // Load initial settings
-    get(ref(db, 'settings')).then(snap => {
-      const data = snap.val() || {};
-      if(data.siteTitle) document.getElementById('siteTitleInput').value = data.siteTitle;
-      if(data.adminNumber) document.getElementById('adminNumberInput').value = data.adminNumber;
-      if(data.bannerUrl) document.getElementById('bannerUrlInput').value = data.bannerUrl;
-    });
-
-    // Save Settings
-    document.getElementById('saveSettingsBtn').addEventListener('click', () => {
-      const title = document.getElementById('siteTitleInput').value.trim();
-      const num = document.getElementById('adminNumberInput').value.trim();
-      const banner = document.getElementById('bannerUrlInput').value.trim();
-      set(ref(db, 'settings'), { siteTitle: title, adminNumber: num, bannerUrl: banner })
-        .then(() => alert("সেটিংস সফলভাবে আপডেট হয়েছে!"));
-    });
-
-    // Adjust User Balance Manually
-    document.getElementById('updateUserBalanceBtn').addEventListener('click', () => {
-      const user = document.getElementById('adjustUsernameInput').value.trim();
-      const newBal = parseFloat(document.getElementById('adjustBalanceInput').value);
-
-      if(!user || isNaN(newBal)) return alert("ইউজারনেম এবং সঠিক ব্যালেন্স দিন!");
-
-      const userRef = ref(db, 'users/' + user);
-      get(userRef).then(snap => {
-        if(!snap.exists()) return alert("এই ইউজার খুঁজে পাওয়া যায়নি!");
-        set(ref(db, 'users/' + user + '/balance'), newBal).then(() => {
-          alert(`ইউজার ${user}-এর ব্যালেন্স ৳${newBal} আপডেট করা হয়েছে!`);
-          document.getElementById('adjustUsernameInput').value = '';
-          document.getElementById('adjustBalanceInput').value = '';
-        });
+    // Navigation Switcher
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById(btn.getAttribute('data-panel')).classList.add('active');
       });
     });
 
-    // Publish Game
-    document.getElementById('publishGameBtn').addEventListener('click', () => {
+    // Realtime Stats and Counts
+    onValue(ref(db, 'users'), (snap) => {
+      const data = snap.val() || {};
+      document.getElementById('statTotalUsers').innerText = Object.keys(data).length;
+      renderUsers(data);
+    });
+
+    // 1. Deposits Handling
+    onValue(ref(db, 'deposits'), (snap) => {
+      const data = snap.val() || {};
+      const tbody = document.getElementById('depositTableBody');
+      tbody.innerHTML = '';
+      let pendingCount = 0;
+
+      for (let id in data) {
+        const item = data[id];
+        if (item.status === 'pending') pendingCount++;
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><b>${item.userId}</b></td>
+          <td>৳${item.amount}</td>
+          <td><code>${item.trxId}</code></td>
+          <td>${new Date(item.time).toLocaleTimeString()}</td>
+          <td><span style="color:${item.status === 'approved' ? '#28a745' : item.status === 'rejected' ? '#dc3545' : '#ffd700'}">${item.status.toUpperCase()}</span></td>
+          <td>
+            ${item.status === 'pending' ? `
+              <button class="btn btn-success approve-dep" data-id="${id}" data-user="${item.userId}" data-amount="${item.amount}">Approve</button>
+              <button class="btn btn-danger reject-dep" data-id="${id}">Reject</button>
+            ` : '-'}
+          </td>
+        `;
+        tbody.appendChild(row);
+      }
+      document.getElementById('statPendingDep').innerText = pendingCount;
+
+      // Event Listeners for Deposit Buttons
+      document.querySelectorAll('.approve-dep').forEach(btn => {
+        btn.onclick = () => approveDeposit(btn.dataset.id, btn.dataset.user, parseFloat(btn.dataset.amount));
+      });
+      document.querySelectorAll('.reject-dep').forEach(btn => {
+        btn.onclick = () => update(ref(db, 'deposits/' + btn.dataset.id), { status: 'rejected' });
+      });
+    });
+
+    function approveDeposit(depId, userId, amount) {
+      get(ref(db, 'users/' + userId + '/balance')).then(snap => {
+        const currentBal = snap.val() || 0;
+        const newBal = currentBal + amount;
+        update(ref(db, 'users/' + userId), { balance: newBal }).then(() => {
+          update(ref(db, 'deposits/' + depId), { status: 'approved' });
+          alert(`৳${amount} যোগ করে ডিপোজিট অনুমোদিত হয়েছে!`);
+        });
+      });
+    }
+
+    // 2. Withdrawals Handling
+    onValue(ref(db, 'withdrawals'), (snap) => {
+      const data = snap.val() || {};
+      const tbody = document.getElementById('withdrawTableBody');
+      tbody.innerHTML = '';
+      let pendingCount = 0;
+
+      for (let id in data) {
+        const item = data[id];
+        if (item.status === 'pending') pendingCount++;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><b>${item.userId}</b></td>
+          <td>৳${item.amount}</td>
+          <td>${item.number}</td>
+          <td>${new Date(item.time).toLocaleTimeString()}</td>
+          <td><span style="color:${item.status === 'approved' ? '#28a745' : item.status === 'rejected' ? '#dc3545' : '#ffd700'}">${item.status.toUpperCase()}</span></td>
+          <td>
+            ${item.status === 'pending' ? `
+              <button class="btn btn-success approve-wit" data-id="${id}" data-user="${item.userId}" data-amount="${item.amount}">Approve</button>
+              <button class="btn btn-danger reject-wit" data-id="${id}" data-user="${item.userId}" data-amount="${item.amount}">Reject & Refund</button>
+            ` : '-'}
+          </td>
+        `;
+        tbody.appendChild(row);
+      }
+      document.getElementById('statPendingWit').innerText = pendingCount;
+
+      document.querySelectorAll('.approve-wit').forEach(btn => {
+        btn.onclick = () => {
+          get(ref(db, 'users/' + btn.dataset.user + '/balance')).then(snap => {
+            const currentBal = snap.val() || 0;
+            const newBal = Math.max(0, currentBal - parseFloat(btn.dataset.amount));
+            update(ref(db, 'users/' + btn.dataset.user), { balance: newBal });
+            update(ref(db, 'withdrawals/' + btn.dataset.id), { status: 'approved' });
+            alert("উইথড্র রিকোয়েস্ট অনুমোদিত হয়েছে!");
+          });
+        };
+      });
+
+      document.querySelectorAll('.reject-wit').forEach(btn => {
+        btn.onclick = () => {
+          update(ref(db, 'withdrawals/' + btn.dataset.id), { status: 'rejected' });
+          alert("উইথড্র বাতিল করা হয়েছে!");
+        };
+      });
+    });
+
+    // 3. Render Users
+    function renderUsers(users) {
+      const tbody = document.getElementById('usersTableBody');
+      tbody.innerHTML = '';
+      for (let u in users) {
+        const user = users[u];
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><b>${u}</b></td>
+          <td>৳<span id="bal-${u}">${(user.balance || 0).toFixed(2)}</span></td>
+          <td><code>${user.password || 'N/A'}</code></td>
+          <td>
+            <input type="number" id="input-${u}" placeholder="নতুন ব্যালেন্স" style="width:100px; padding:4px;" />
+            <button class="btn btn-primary update-user-bal" data-user="${u}">Update</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      }
+
+      document.querySelectorAll('.update-user-bal').forEach(btn => {
+        btn.onclick = () => {
+          const username = btn.dataset.user;
+          const val = parseFloat(document.getElementById('input-' + username).value);
+          if (isNaN(val)) return alert("সঠিক সংখ্যা লিখুন!");
+          update(ref(db, 'users/' + username), { balance: val }).then(() => alert("ব্যালেন্স আপডেট সফল!"));
+        };
+      });
+    }
+
+    // 4. Upload and Manage Games
+    document.getElementById('saveGameBtn').onclick = () => {
       const name = document.getElementById('gameNameInput').value.trim();
       const cat = document.getElementById('gameCategorySelect').value;
       const cover = document.getElementById('gameCoverInput').value.trim();
-      const code = document.getElementById('gameHtmlCodeInput').value.trim();
+      const html = document.getElementById('gameHtmlInput').value.trim();
 
-      if(!name || !code) return alert("গেমের নাম এবং HTML কোড দিন!");
+      if (!name || !html) return alert("গেমের নাম এবং HTML কোড পূরণ করুন!");
 
       push(ref(db, 'games'), {
         gameName: name,
         category: cat,
         coverUrl: cover,
-        htmlCode: code,
-        time: Date.now()
+        htmlCode: html
       }).then(() => {
-        alert("গেমটি সফলভাবে লবিতে যোগ হয়েছে!");
+        alert("গেম সফলভাবে আপলোড করা হয়েছে!");
         document.getElementById('gameNameInput').value = '';
         document.getElementById('gameCoverInput').value = '';
-        document.getElementById('gameHtmlCodeInput').value = '';
+        document.getElementById('gameHtmlInput').value = '';
       });
-    });
+    };
 
-    // Deposit List & Approval
-    onValue(ref(db, 'deposits'), (snapshot) => {
-      const list = document.getElementById('depositList');
-      list.innerHTML = '';
-      const data = snapshot.val();
-      let has = false;
-
-      for(let key in data) {
-        if(data[key].status === 'pending') {
-          has = true;
-          const item = data[key];
-          list.innerHTML += `
-            <li>
-              <b>ইউজার:</b> ${item.userId} | <b>পরিমাণ:</b> ৳${item.amount} <br>
-              <b>Trx ID:</b> ${item.trxId}
-              <div style="margin-top:6px;">
-                <button class="btn-green approve-dep" data-key="${key}" data-user="${item.userId}" data-amount="${item.amount}" type="button">Approve</button>
-                <button class="btn-red reject-dep" data-key="${key}" type="button">Reject</button>
-              </div>
-            </li>`;
-        }
-      }
-      if(!has) list.innerHTML = '<li>কোনো প্যান্ডিং ডিপোজিট নেই।</li>';
-
-      document.querySelectorAll('.approve-dep').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const key = btn.getAttribute('data-key');
-          const userId = btn.getAttribute('data-user');
-          const amount = parseFloat(btn.getAttribute('data-amount'));
-          approveDep(key, userId, amount);
-        });
-      });
-
-      document.querySelectorAll('.reject-dep').forEach(btn => {
-        btn.addEventListener('click', () => rejectDep(btn.getAttribute('data-key')));
-      });
-    });
-
-    function approveDep(key, userId, amount) {
-      const balRef = ref(db, 'users/' + userId + '/balance');
-      get(balRef).then((snap) => {
-        const currentBal = snap.val() || 0;
-        set(balRef, currentBal + amount).then(() => {
-          set(ref(db, 'deposits/' + key + '/status'), 'approved');
-          alert("ডিপোজিট অ্যাপ্রুভ হয়েছে এবং ইউজারের একাউন্টে ব্যালেন্স যোগ হয়েছে!");
-        });
-      });
-    }
-
-    function rejectDep(key) {
-      set(ref(db, 'deposits/' + key + '/status'), 'rejected');
-      alert("ডিপোজিট রিজেক্ট করা হয়েছে!");
-    }
-
-    // Withdraw List & Approval
-    onValue(ref(db, 'withdrawals'), (snapshot) => {
-      const list = document.getElementById('withdrawList');
-      list.innerHTML = '';
-      const data = snapshot.val();
-      let has = false;
-
-      for(let key in data) {
-        if(data[key].status === 'pending') {
-          has = true;
-          const item = data[key];
-          list.innerHTML += `
-            <li>
-              <b>ইউজার:</b> ${item.userId} | <b>পরিমাণ:</b> ৳${item.amount} <br>
-              <b>নম্বর:</b> ${item.number}
-              <div style="margin-top:6px;">
-                <button class="btn-green approve-wit" data-key="${key}" data-user="${item.userId}" data-amount="${item.amount}" type="button">Approve</button>
-                <button class="btn-red reject-wit" data-key="${key}" type="button">Reject</button>
-              </div>
-            </li>`;
-        }
-      }
-      if(!has) list.innerHTML = '<li>কোনো প্যান্ডিং উইথড্র নেই।</li>';
-
-      document.querySelectorAll('.approve-wit').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const key = btn.getAttribute('data-key');
-          const userId = btn.getAttribute('data-user');
-          const amount = parseFloat(btn.getAttribute('data-amount'));
-          approveWit(key, userId, amount);
-        });
-      });
-
-      document.querySelectorAll('.reject-wit').forEach(btn => {
-        btn.addEventListener('click', () => rejectWit(btn.getAttribute('data-key')));
-      });
-    });
-
-    function approveWit(key, userId, amount) {
-      const balRef = ref(db, 'users/' + userId + '/balance');
-      get(balRef).then((snap) => {
-        const currentBal = snap.val() || 0;
-        if(currentBal < amount) return alert("ইউজারের একাউন্টে পর্যাপ্ত ব্যালেন্স নেই!");
-
-        set(balRef, currentBal - amount).then(() => {
-          set(ref(db, 'withdrawals/' + key + '/status'), 'approved');
-          alert("উইথড্র অ্যাপ্রুভ হয়েছে এবং ইউজারের ব্যালেন্স কেটে নেওয়া হয়েছে!");
-        });
-      });
-    }
-
-    function rejectWit(key) {
-      set(ref(db, 'withdrawals/' + key + '/status'), 'rejected');
-      alert("উইথড্র রিজেক্ট করা হয়েছে!");
-    }
-
-    // Live Chat Management
-    onValue(ref(db, 'chats'), (snapshot) => {
-      const chatUserList = document.getElementById('chatUserList');
-      chatUserList.innerHTML = '';
-      const data = snapshot.val();
-      if(!data) { chatUserList.innerHTML = '<div style="font-size:11px; color:#aaa;">কোনো চ্যাট নেই।</div>'; return; }
-
-      for(let userId in data) {
-        chatUserList.innerHTML += `<div class="chat-user-btn chat-user-item" data-userid="${userId}"><i class="fa-solid fa-user"></i> ইউজার: ${userId}</div>`;
+    onValue(ref(db, 'games'), (snap) => {
+      const data = snap.val() || {};
+      const tbody = document.getElementById('gamesTableBody');
+      tbody.innerHTML = '';
+      for (let id in data) {
+        const game = data[id];
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><b>${game.gameName}</b></td>
+          <td>${game.category.toUpperCase()}</td>
+          <td>
+            <button class="btn btn-danger delete-game" data-id="${id}">ডিলিট করুন</button>
+          </td>
+        `;
+        tbody.appendChild(row);
       }
 
-      document.querySelectorAll('.chat-user-item').forEach(item => {
-        item.addEventListener('click', () => {
-          openAdminChat(item.getAttribute('data-userid'));
-        });
+      document.querySelectorAll('.delete-game').forEach(btn => {
+        btn.onclick = () => {
+          if (confirm("আপনি কি নিশ্চিত এই গেমটি মুছে ফেলতে চান?")) {
+            remove(ref(db, 'games/' + btn.dataset.id));
+          }
+        };
       });
     });
 
-    function openAdminChat(userId) {
-      selectedChatUser = userId;
-      document.getElementById('activeChatBox').style.display = 'block';
-      document.getElementById('adminChatInputRow').style.display = 'flex';
+    // 5. Live Customer Support Chat
+    onValue(ref(db, 'chats'), (snap) => {
+      const data = snap.val() || {};
+      const userList = document.getElementById('chatUserList');
+      userList.innerHTML = '';
 
-      onValue(ref(db, 'chats/' + userId), (snapshot) => {
-        const box = document.getElementById('activeChatBox');
+      for (let u in data) {
+        const chip = document.createElement('div');
+        chip.className = `user-chip ${currentSelectedChatUser === u ? 'active' : ''}`;
+        chip.innerText = u;
+        chip.onclick = () => selectChatUser(u);
+        userList.appendChild(chip);
+      }
+    });
+
+    function selectChatUser(username) {
+      currentSelectedChatUser = username;
+      document.getElementById('activeChatContainer').style.display = 'block';
+      document.getElementById('activeChatUser').innerText = username;
+
+      onValue(ref(db, 'chats/' + username), (snap) => {
+        const box = document.getElementById('adminChatBox');
         box.innerHTML = '';
-        const data = snapshot.val();
-        for(let k in data) {
-          box.innerHTML += `<div><b>${data[k].sender}:</b> ${data[k].message}</div>`;
+        const msgs = snap.val() || {};
+        for (let k in msgs) {
+          const m = msgs[k];
+          box.innerHTML += `<div class="msg ${m.sender === 'user' ? 'user' : 'admin'}">${m.message}</div>`;
         }
         box.scrollTop = box.scrollHeight;
       });
     }
 
-    document.getElementById('sendAdminReplyBtn').addEventListener('click', () => {
-      const text = document.getElementById('adminReplyInput').value.trim();
-      if(!text || !selectedChatUser) return;
-      push(ref(db, 'chats/' + selectedChatUser), { sender: 'admin', message: text, time: Date.now() })
-        .then(() => { document.getElementById('adminReplyInput').value = ''; });
+    document.getElementById('sendAdminReplyBtn').onclick = () => {
+      const text = document.getElementById('adminChatInput').value.trim();
+      if (!text || !currentSelectedChatUser) return;
+
+      push(ref(db, 'chats/' + currentSelectedChatUser), {
+        sender: 'admin',
+        message: text,
+        time: Date.now()
+      }).then(() => {
+        document.getElementById('adminChatInput').value = '';
+      });
+    };
+
+    // 6. Global Platform Settings
+    document.getElementById('saveSettingsBtn').onclick = () => {
+      const title = document.getElementById('settingSiteTitle').value.trim();
+      const num = document.getElementById('settingAdminNumber').value.trim();
+      const banner = document.getElementById('settingBannerUrl').value.trim();
+
+      update(ref(db, 'settings'), {
+        siteTitle: title || 'CV999',
+        adminNumber: num || 'N/A',
+        bannerUrl: banner || ''
+      }).then(() => alert("সাইট সেটিংস সেভ হয়েছে!"));
+    };
+
+    // Load initial settings into input fields
+    get(ref(db, 'settings')).then(snap => {
+      const data = snap.val() || {};
+      if (data.siteTitle) document.getElementById('settingSiteTitle').value = data.siteTitle;
+      if (data.adminNumber) document.getElementById('settingAdminNumber').value = data.adminNumber;
+      if (data.bannerUrl) document.getElementById('settingBannerUrl').value = data.bannerUrl;
     });
   </script>
 </body>
