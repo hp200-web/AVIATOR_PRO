@@ -1,505 +1,979 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Control Panel - CV999</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    body { background-color: #0d0e12; color: #fff; padding: 15px; }
-    
-    /* Header & Navbar */
-    .admin-header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #14151a; border-radius: 8px; border: 1px solid #ff8c00; margin-bottom: 20px; }
-    .admin-title { font-size: 20px; font-weight: bold; color: #ff8c00; }
-    
-    .nav-tabs { display: flex; gap: 10px; overflow-x: auto; margin-bottom: 20px; padding-bottom: 5px; }
-    .tab-btn { background: #181920; border: 1px solid #333; color: #aaa; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 13px; white-space: nowrap; }
-    .tab-btn.active { background: #ff8c00; color: #000; border-color: #ff8c00; }
-    
-    /* Stats Section */
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-bottom: 20px; }
-    .stat-card { background: #14151a; padding: 15px; border-radius: 8px; border-left: 4px solid #ff8c00; text-align: center; }
-    .stat-card h4 { color: #888; font-size: 12px; margin-bottom: 5px; }
-    .stat-card p { font-size: 22px; font-weight: bold; color: #ffd700; }
-    
-    /* Panels */
-    .panel { display: none; background: #14151a; padding: 20px; border-radius: 8px; border: 1px solid #222; margin-bottom: 20px; }
-    .panel.active { display: block; }
-    .panel-title { font-size: 16px; color: #ff8c00; margin-bottom: 15px; border-bottom: 1px solid #222; padding-bottom: 8px; }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CV999 - VIP Gaming Platform</title>
 
-    /* Tables */
-    .data-table-wrapper { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; text-align: left; }
-    th, td { padding: 12px; border-bottom: 1px solid #222; }
-    th { background: #1c1d24; color: #ff8c00; }
-    
-    /* Buttons & Inputs */
-    .btn { padding: 6px 12px; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 12px; margin-right: 4px; }
-    .btn-success { background: #28a745; color: #fff; }
-    .btn-danger { background: #dc3545; color: #fff; }
-    .btn-primary { background: #ff8c00; color: #000; }
-    
-    .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; font-size: 12px; color: #aaa; margin-bottom: 5px; }
-    .input-field { width: 100%; padding: 10px; background: #0a0b0d; border: 1px solid #333; color: #fff; border-radius: 6px; font-size: 13px; outline: none; }
-    textarea.input-field { resize: vertical; min-height: 80px; }
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
-    /* Admin Chat UI */
-    .chat-user-list { display: flex; gap: 8px; overflow-x: auto; margin-bottom: 15px; padding-bottom: 5px; }
-    .user-chip { background: #1f2029; padding: 8px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; border: 1px solid #333; white-space: nowrap; }
-    .user-chip.active { border-color: #ff8c00; background: rgba(255, 140, 0, 0.2); color: #ff8c00; font-weight: bold; }
-    .admin-chat-box { height: 250px; background: #0a0b0d; border: 1px solid #222; border-radius: 6px; padding: 10px; overflow-y: auto; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
-    .msg { max-width: 75%; padding: 8px 12px; border-radius: 6px; font-size: 12px; }
-    .msg.user { background: #22232a; color: #fff; align-self: flex-start; }
-    .msg.admin { background: #ff8c00; color: #000; font-weight: bold; align-self: flex-end; }
-  </style>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#0f1014;color:#fff;font-family:Arial,sans-serif}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+
+#authScreen{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:linear-gradient(145deg,#101114,#191b21)
+}
+.auth-box{
+  width:100%;max-width:420px;background:#191b20;border:1px solid #2d3038;
+  border-radius:18px;padding:24px;box-shadow:0 18px 60px rgba(0,0,0,.45)
+}
+.auth-logo{text-align:center;font-size:28px;font-weight:800;color:#ff8c00;margin-bottom:22px}
+.tabs{display:flex;gap:5px;background:#101114;padding:4px;border-radius:10px;margin-bottom:18px}
+.tabs button{
+  flex:1;border:0;background:transparent;color:#999;padding:12px;border-radius:8px
+}
+.tabs button.active{background:#ff8c00;color:#111;font-weight:800}
+.form{display:flex;flex-direction:column;gap:12px}
+.form input,.modal-box input,.chat-input{
+  width:100%;padding:13px;background:#101114;color:#fff;border:1px solid #353841;
+  border-radius:10px;outline:none
+}
+.form input:focus,.modal-box input:focus,.chat-input:focus{border-color:#ff8c00}
+.primary{
+  border:0;background:#ff8c00;color:#111;font-weight:800;padding:13px;border-radius:10px
+}
+.primary:disabled{opacity:.55;cursor:not-allowed}
+.auth-status{text-align:center;min-height:22px;margin-top:10px;color:#ffb15c;font-size:13px}
+
+#mainAppContent{display:none;min-height:100vh;padding-bottom:72px}
+header{
+  position:sticky;top:0;z-index:20;background:#181a20;border-bottom:1px solid #2a2d34;
+  padding:13px 15px;display:flex;align-items:center;justify-content:space-between
+}
+.brand{color:#ff8c00;font-weight:800;font-size:18px}
+.balance{font-weight:800}.balance small{color:#888;font-weight:400;margin-right:4px}
+
+.container{max-width:950px;margin:auto;padding:14px}
+.view-section{display:none}.view-section.active{display:block}
+
+.banner{
+  width:100%;height:175px;object-fit:cover;border-radius:14px;background:#222;display:block
+}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.action{
+  border:1px solid #30333a;background:#1a1c21;color:#fff;padding:13px;border-radius:10px
+}
+.action:hover{border-color:#ff8c00}
+
+.categories{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px}
+.cat-item{
+  white-space:nowrap;border:1px solid #30333a;background:#1a1c21;color:#aaa;
+  padding:8px 14px;border-radius:20px
+}
+.cat-item.active{background:#ff8c00;color:#111;border-color:#ff8c00}
+
+.game-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.game-card{
+  overflow:hidden;background:#191b20;border:1px solid #292c33;border-radius:12px
+}
+.game-card img{display:block;width:100%;height:125px;object-fit:cover}
+.game-title{padding:10px;font-weight:700}
+.empty{text-align:center;color:#777;padding:35px;grid-column:1/-1}
+
+.chat-box,.profile-card{
+  background:#191b20;border:1px solid #292c33;border-radius:12px;padding:14px
+}
+.chat-messages{
+  height:260px;overflow-y:auto;border:1px solid #30333a;border-radius:9px;padding:10px;
+  margin-bottom:9px
+}
+.chat-message{background:#23252b;border-radius:8px;padding:8px;margin-bottom:7px;font-size:13px}
+.chat-row{display:flex;gap:7px}.chat-input{flex:1}
+
+.bottom-nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;
+  background:#181a20;border-top:1px solid #2a2d34
+}
+.nav-item{
+  flex:1;text-align:center;padding:10px 4px;color:#888;font-size:12px
+}
+.nav-item i{display:block;font-size:18px;margin-bottom:3px}
+.nav-item.active{color:#ff8c00}
+
+.secondary{
+  border:1px solid #3b3e46;background:#24262c;color:#fff;padding:11px;border-radius:9px
+}
+.danger{
+  border:0;background:#c83e3e;color:#fff;padding:11px;border-radius:9px;margin-top:8px
+}
+
+.modal{
+  position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.75);
+  display:none;align-items:center;justify-content:center;padding:16px
+}
+.modal-box{
+  width:100%;max-width:420px;background:#191b20;border:1px solid #30333a;
+  border-radius:15px;padding:18px
+}
+.modal-box h3{margin-top:0}
+.modal-actions{display:flex;gap:8px;margin-top:10px}
+.modal-actions>*{flex:1}
+
+#gameLauncher{
+  position:fixed;inset:0;z-index:100;background:#08090b;display:none;flex-direction:column
+}
+.game-head{
+  height:52px;flex:none;background:#181a20;padding:0 12px;display:flex;
+  align-items:center;justify-content:space-between
+}
+.game-close{
+  border:0;background:#292c33;color:#fff;padding:8px 12px;border-radius:8px
+}
+.game-frame{width:100%;height:calc(100% - 52px);border:0;background:#fff}
+
+@media(min-width:650px){
+  .game-grid{grid-template-columns:repeat(4,1fr)}
+  .game-card img{height:140px}
+}
+</style>
 </head>
+
 <body>
 
-  <div class="admin-header">
-    <div class="admin-title"><i class="fa-solid fa-user-shield"></i> CV999 Admin Control Panel</div>
+<!-- ================= AUTH ================= -->
+<section id="authScreen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <i class="fa-solid fa-gamepad"></i>
+      <span id="authLogoText">CV999</span>
+    </div>
+
+    <div class="tabs">
+      <button id="loginTabBtn" class="active">লগইন</button>
+      <button id="registerTabBtn">রেজিস্ট্রেশন</button>
+    </div>
+
+    <div id="loginForm" class="form">
+      <input id="loginEmail" type="email" placeholder="ইমেইল" autocomplete="email">
+      <input id="loginPassword" type="password" placeholder="পাসওয়ার্ড" autocomplete="current-password">
+      <button id="loginBtn" class="primary">লগইন</button>
+    </div>
+
+    <div id="registerForm" class="form hidden">
+      <input id="regEmail" type="email" placeholder="ইমেইল" autocomplete="email">
+      <input id="regPassword" type="password" placeholder="কমপক্ষে ৬ অক্ষরের পাসওয়ার্ড" autocomplete="new-password">
+      <button id="registerBtn" class="primary">একাউন্ট তৈরি করুন</button>
+    </div>
+
+    <div id="authStatus" class="auth-status"></div>
   </div>
+</section>
 
-  <!-- Dashboard Quick Stats -->
-  <div class="stats-grid">
-    <div class="stat-card">
-      <h4>মোট নিবন্ধিত ইউজার</h4>
-      <p id="statTotalUsers">0</p>
-    </div>
-    <div class="stat-card">
-      <h4>পেন্ডিং ডিপোজিট</h4>
-      <p id="statPendingDep">0</p>
-    </div>
-    <div class="stat-card">
-      <h4>পেন্ডিং উইথড্র</h4>
-      <p id="statPendingWit">0</p>
-    </div>
+<!-- ================= MAIN APP ================= -->
+<main id="mainAppContent">
+
+<header>
+  <div class="brand">
+    <i class="fa-solid fa-gamepad"></i>
+    <span id="siteTitle">CV999</span>
   </div>
-
-  <!-- Nav Tabs -->
-  <div class="nav-tabs">
-    <button class="tab-btn active" data-panel="depositsPanel"><i class="fa-solid fa-wallet"></i> ডিপোজিট রিকোয়েস্ট</button>
-    <button class="tab-btn" data-panel="withdrawalsPanel"><i class="fa-solid fa-money-bill-transfer"></i> উইথড্র রিকোয়েস্ট</button>
-    <button class="tab-btn" data-panel="usersPanel"><i class="fa-solid fa-users"></i> ইউজার ম্যানেজমেন্ট</button>
-    <button class="tab-btn" data-panel="gamesPanel"><i class="fa-solid fa-gamepad"></i> গেম আপলোড/কন্ট্রোল</button>
-    <button class="tab-btn" data-panel="chatsPanel"><i class="fa-solid fa-comments"></i> কাস্টমার সাপোর্ট চ্যাট</button>
-    <button class="tab-btn" data-panel="settingsPanel"><i class="fa-solid fa-gear"></i> সাইট সেটিংস</button>
+  <div class="balance">
+    <small>Balance</small>
+    ৳<span id="userBalance">0.00</span>
   </div>
+</header>
 
-  <!-- Deposits Panel -->
-  <div id="depositsPanel" class="panel active">
-    <div class="panel-title">ডিপোজিট রিকোয়েস্টসমূহ</div>
-    <div class="data-table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>ইউজার</th>
-            <th>পরিমাণ (৳)</th>
-            <th>TrxID</th>
-            <th>সময়</th>
-            <th>স্ট্যাটাস</th>
-            <th>অ্যাকশন</th>
-          </tr>
-        </thead>
-        <tbody id="depositTableBody"></tbody>
-      </table>
-    </div>
-  </div>
+<div class="container">
 
-  <!-- Withdrawals Panel -->
-  <div id="withdrawalsPanel" class="panel">
-    <div class="panel-title">উইথড্র রিকোয়েস্টসমূহ</div>
-    <div class="data-table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>ইউজার</th>
-            <th>পরিমাণ (৳)</th>
-            <th>নম্বর</th>
-            <th>সময়</th>
-            <th>স্ট্যাটাস</th>
-            <th>অ্যাকশন</th>
-          </tr>
-        </thead>
-        <tbody id="withdrawTableBody"></tbody>
-      </table>
-    </div>
-  </div>
+  <!-- HOME -->
+  <section id="homeView" class="view-section active">
+    <img id="mainBanner" class="banner" alt="Banner">
 
-  <!-- Users Panel -->
-  <div id="usersPanel" class="panel">
-    <div class="panel-title">ইউজার তালিকা ও ব্যালেন্স কন্ট্রোল</div>
-    <div class="data-table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>ইউজারনেম</th>
-            <th>বর্তমান ব্যালেন্স</th>
-            <th>পাসওয়ার্ড</th>
-            <th>ব্যালেন্স পরিবর্তন করুন</th>
-          </tr>
-        </thead>
-        <tbody id="usersTableBody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Games Panel -->
-  <div id="gamesPanel" class="panel">
-    <div class="panel-title">নতুন গেম যুক্ত করুন (HTML Code Injection)</div>
-    <div style="max-width: 600px;">
-      <div class="form-group">
-        <label>গেমের নাম</label>
-        <input type="text" id="gameNameInput" class="input-field" placeholder="যেমন: Ludo Classic">
-      </div>
-      <div class="form-group">
-        <label>ক্যাটাগরি</label>
-        <select id="gameCategorySelect" class="input-field">
-          <option value="hot">হট গেম (Hot)</option>
-          <option value="slot">স্লট (Slot)</option>
-          <option value="fish">ফিশিং (Fish)</option>
-          <option value="casino">ক্যাসিনো (Casino)</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>কভার ইমেজের URL (Thumbnail)</label>
-        <input type="text" id="gameCoverInput" class="input-field" placeholder="https://example.com/image.jpg">
-      </div>
-      <div class="form-group">
-        <label>গেমের HTML ফাইল/কোড (Paste Full HTML Code)</label>
-        <textarea id="gameHtmlInput" class="input-field" placeholder="এখানে আপনার গেমের সম্পূর্ণ HTML কোড পেস্ট করুন..."></textarea>
-      </div>
-      <button class="btn btn-primary" id="saveGameBtn" style="padding: 10px 20px;">গেম আপলোড করুন</button>
+    <div class="actions">
+      <button id="depositBtn" class="action">
+        <i class="fa-solid fa-plus"></i> ডিপোজিট
+      </button>
+      <button id="withdrawBtn" class="action">
+        <i class="fa-solid fa-minus"></i> উইথড্র
+      </button>
     </div>
 
-    <div class="panel-title" style="margin-top: 30px;">বিদ্যমান গেমের তালিকা</div>
-    <div class="data-table-wrapper">
-      <table>
-        <thead>
-          <tr>
-            <th>গেমের নাম</th>
-            <th>ক্যাটাগরি</th>
-            <th>অ্যাকশন</th>
-          </tr>
-        </thead>
-        <tbody id="gamesTableBody"></tbody>
-      </table>
+    <div class="categories">
+      <button class="cat-item active" data-cat="hot">সব</button>
+      <button class="cat-item" data-cat="casino">ক্যাসিনো</button>
+      <button class="cat-item" data-cat="slots">স্লট</button>
+      <button class="cat-item" data-cat="sports">স্পোর্টস</button>
     </div>
-  </div>
 
-  <!-- Chats Panel -->
-  <div id="chatsPanel" class="panel">
-    <div class="panel-title">ইউজার লাইভ চ্যাট সাপোর্ট</div>
-    <div class="chat-user-list" id="chatUserList"></div>
-    <div id="activeChatContainer" style="display:none;">
-      <h4 style="font-size: 13px; color:#ff8c00; margin-bottom:5px;">মেসেজ করছেন: <span id="activeChatUser"></span></h4>
-      <div class="admin-chat-box" id="adminChatBox"></div>
-      <div style="display: flex; gap: 8px;">
-        <input type="text" id="adminChatInput" class="input-field" placeholder="রিপ্লাই লিখুন...">
-        <button class="btn btn-primary" id="sendAdminReplyBtn">পাঠান</button>
+    <div id="gameGrid" class="game-grid"></div>
+  </section>
+
+  <!-- CHAT -->
+  <section id="chatView" class="view-section">
+    <h3>লাইভ চ্যাট</h3>
+    <div class="chat-box">
+      <div id="chatMessages" class="chat-messages"></div>
+      <div class="chat-row">
+        <input id="chatInput" class="chat-input" placeholder="মেসেজ লিখুন...">
+        <button id="sendChatBtn" class="primary">পাঠান</button>
       </div>
     </div>
-  </div>
+  </section>
 
-  <!-- Settings Panel -->
-  <div id="settingsPanel" class="panel">
-    <div class="panel-title">প্লাটফর্মের সাধারণ সেটিংস</div>
-    <div style="max-width: 500px;">
-      <div class="form-group">
-        <label>সাইটের নাম (Website Title / Logo)</label>
-        <input type="text" id="settingSiteTitle" class="input-field" placeholder="CV999">
-      </div>
-      <div class="form-group">
-        <label>অ্যাডমিন পেমেন্ট নাম্বার (ডিপোজিট নোটিশে দেখানোর জন্য)</label>
-        <input type="text" id="settingAdminNumber" class="input-field" placeholder="017XXXXXXXX">
-      </div>
-      <div class="form-group">
-        <label>মূল ব্যানার পিকচার URL</label>
-        <input type="text" id="settingBannerUrl" class="input-field" placeholder="https://example.com/banner.jpg">
-      </div>
-      <button class="btn btn-primary" id="saveSettingsBtn" style="padding: 10px 20px;">সেটিংস সেভ করুন</button>
+  <!-- PROFILE -->
+  <section id="profileView" class="view-section">
+    <h3>প্রোফাইল</h3>
+    <div class="profile-card">
+      <p>UID: <b id="profileUserId">—</b></p>
+      <p>ইমেইল: <b id="profileEmail">—</b></p>
+      <p>ব্যালেন্স: <b>৳<span id="profileBalance">0.00</span></b></p>
+
+      <button id="refreshBalanceBtn" class="secondary">
+        ব্যালেন্স রিফ্রেশ
+      </button>
+
+      <br>
+
+      <button id="logoutBtn" class="danger">
+        লগআউট
+      </button>
+    </div>
+  </section>
+
+</div>
+
+<nav class="bottom-nav">
+  <div class="nav-item active" data-view="homeView">
+    <i class="fa-solid fa-house"></i>হোম
+  </div>
+  <div class="nav-item" data-view="chatView">
+    <i class="fa-solid fa-comments"></i>চ্যাট
+  </div>
+  <div class="nav-item" data-view="profileView">
+    <i class="fa-solid fa-user"></i>প্রোফাইল
+  </div>
+</nav>
+
+</main>
+
+<!-- ================= DEPOSIT MODAL ================= -->
+<div id="depositModal" class="modal">
+  <div class="modal-box">
+    <h3>ডিপোজিট রিকোয়েস্ট</h3>
+    <input id="depositAmount" type="number" min="1" placeholder="পরিমাণ">
+    <input id="depositRef" placeholder="রেফারেন্স / ট্রানজেকশন আইডি">
+
+    <div class="modal-actions">
+      <button class="secondary closeModal">বন্ধ</button>
+      <button id="submitDeposit" class="primary">সাবমিট</button>
     </div>
   </div>
+</div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, onValue, set, update, remove, push, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+<!-- ================= WITHDRAW MODAL ================= -->
+<div id="withdrawModal" class="modal">
+  <div class="modal-box">
+    <h3>উইথড্র রিকোয়েস্ট</h3>
+    <input id="withdrawAmount" type="number" min="1" placeholder="পরিমাণ">
+    <input id="withdrawMethod" placeholder="মেথড / নম্বর">
 
-    // আপনার নতুন Firebase Config
-    const firebaseConfig = {
-      apiKey: "AIzaSyAyTOnCm5IuPcB-yvGjFl3KbwRVxNrcNSY",
-      authDomain: "ff-to-gaming-4ea1b.firebaseapp.com",
-      databaseURL: "https://ff-to-gaming-4ea1b-default-rtdb.firebaseio.com",
-      projectId: "ff-to-gaming-4ea1b",
-      storageBucket: "ff-to-gaming-4ea1b.appspot.com",
-      messagingSenderId: "816776130875",
-      appId: "1:816776130875:web:c3e7984e0de53cbd89871e",
-      measurementId: "G-N36W0TG2HD"
-    };
+    <div class="modal-actions">
+      <button class="secondary closeModal">বন্ধ</button>
+      <button id="submitWithdraw" class="primary">সাবমিট</button>
+    </div>
+  </div>
+</div>
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+<!-- ================= GAME LAUNCHER ================= -->
+<div id="gameLauncher">
+  <div class="game-head">
+    <b id="currentGameTitle">Game</b>
+    <button id="closeGameLauncherBtn" class="game-close">বন্ধ করুন</button>
+  </div>
+  <iframe
+    id="gameIframe"
+    class="game-frame"
+    sandbox="allow-scripts allow-forms allow-modals allow-popups">
+  </iframe>
+</div>
 
-    let currentSelectedChatUser = null;
+<script>
+"use strict";
 
-    // Navigation Switcher
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById(btn.getAttribute('data-panel')).classList.add('active');
-      });
-    });
+/* =========================================================
+   FIREBASE CONFIG
+   ========================================================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyAyTOnCm5IuPcB-yvGjFl3KbwRVxNrcNSY",
+  authDomain: "ff-to-gaming-4ea1b.firebaseapp.com",
+  databaseURL: "https://ff-to-gaming-4ea1b-default-rtdb.firebaseio.com",
+  projectId: "ff-to-gaming-4ea1b",
+  storageBucket: "ff-to-gaming-4ea1b.appspot.com",
+  messagingSenderId: "816776130875",
+  appId: "1:816776130875:web:c3e7984e0de53cbd89871e"
+};
 
-    // Realtime Stats and Counts
-    onValue(ref(db, 'users'), (snap) => {
-      const data = snap.val() || {};
-      document.getElementById('statTotalUsers').innerText = Object.keys(data).length;
-      renderUsers(data);
-    });
+let auth = null;
+let db = null;
+let currentUser = null;
+let currentUserBalance = 0;
+let allGames = {};
+let selectedCategory = "hot";
+let balanceListener = null;
+let settingsListener = null;
+let gamesListener = null;
+let chatListener = null;
 
-    // 1. Deposits Handling
-    onValue(ref(db, 'deposits'), (snap) => {
-      const data = snap.val() || {};
-      const tbody = document.getElementById('depositTableBody');
-      tbody.innerHTML = '';
-      let pendingCount = 0;
+/* =========================================================
+   HELPERS
+   ========================================================= */
+const $ = id => document.getElementById(id);
 
-      for (let id in data) {
-        const item = data[id];
-        if (item.status === 'pending') pendingCount++;
-        
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td><b>${item.userId}</b></td>
-          <td>৳${item.amount}</td>
-          <td><code>${item.trxId}</code></td>
-          <td>${new Date(item.time).toLocaleTimeString()}</td>
-          <td><span style="color:${item.status === 'approved' ? '#28a745' : item.status === 'rejected' ? '#dc3545' : '#ffd700'}">${item.status.toUpperCase()}</span></td>
-          <td>
-            ${item.status === 'pending' ? `
-              <button class="btn btn-success approve-dep" data-id="${id}" data-user="${item.userId}" data-amount="${item.amount}">Approve</button>
-              <button class="btn btn-danger reject-dep" data-id="${id}">Reject</button>
-            ` : '-'}
-          </td>
-        `;
-        tbody.appendChild(row);
-      }
-      document.getElementById('statPendingDep').innerText = pendingCount;
+function show(el, display = "block") {
+  if (el) el.style.display = display;
+}
 
-      // Event Listeners for Deposit Buttons
-      document.querySelectorAll('.approve-dep').forEach(btn => {
-        btn.onclick = () => approveDeposit(btn.dataset.id, btn.dataset.user, parseFloat(btn.dataset.amount));
-      });
-      document.querySelectorAll('.reject-dep').forEach(btn => {
-        btn.onclick = () => update(ref(db, 'deposits/' + btn.dataset.id), { status: 'rejected' });
-      });
-    });
+function hide(el) {
+  if (el) el.style.display = "none";
+}
 
-    function approveDeposit(depId, userId, amount) {
-      get(ref(db, 'users/' + userId + '/balance')).then(snap => {
-        const currentBal = snap.val() || 0;
-        const newBal = currentBal + amount;
-        update(ref(db, 'users/' + userId), { balance: newBal }).then(() => {
-          update(ref(db, 'deposits/' + depId), { status: 'approved' });
-          alert(`৳${amount} যোগ করে ডিপোজিট অনুমোদিত হয়েছে!`);
-        });
-      });
+function setAuthStatus(message, isError = false) {
+  $("authStatus").textContent = message || "";
+  $("authStatus").style.color = isError ? "#ff6565" : "#ffb15c";
+}
+
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#039;"
+  }[char]));
+}
+
+function firebaseError(error) {
+  const code = error && error.code ? error.code : "";
+
+  const messages = {
+    "auth/invalid-email": "ইমেইল ঠিক নয়।",
+    "auth/user-not-found": "এই ইমেইলে কোনো একাউন্ট পাওয়া যায়নি।",
+    "auth/wrong-password": "পাসওয়ার্ড ভুল।",
+    "auth/invalid-credential": "ইমেইল অথবা পাসওয়ার্ড ভুল।",
+    "auth/email-already-in-use": "এই ইমেইল আগে থেকেই ব্যবহার করা হয়েছে।",
+    "auth/weak-password": "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।",
+    "auth/operation-not-allowed": "Firebase Console-এ Email/Password Sign-in চালু করুন।",
+    "auth/network-request-failed": "নেটওয়ার্ক সমস্যা হয়েছে।",
+    "auth/too-many-requests": "অনেকবার চেষ্টা করা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।",
+    "database/permission-denied": "Database permission denied। Firebase Rules পরীক্ষা করুন।"
+  };
+
+  return messages[code] || error?.message || "অজানা সমস্যা হয়েছে।";
+}
+
+/* =========================================================
+   FIREBASE INITIALIZATION
+   ========================================================= */
+function initializeFirebase() {
+  try {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
     }
 
-    // 2. Withdrawals Handling
-    onValue(ref(db, 'withdrawals'), (snap) => {
-      const data = snap.val() || {};
-      const tbody = document.getElementById('withdrawTableBody');
-      tbody.innerHTML = '';
-      let pendingCount = 0;
+    auth = firebase.auth();
+    db = firebase.database();
 
-      for (let id in data) {
-        const item = data[id];
-        if (item.status === 'pending') pendingCount++;
+    return true;
+  } catch (error) {
+    console.error("Firebase initialization error:", error);
+    setAuthStatus("Firebase চালু করা যায়নি।", true);
+    return false;
+  }
+}
 
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td><b>${item.userId}</b></td>
-          <td>৳${item.amount}</td>
-          <td>${item.number}</td>
-          <td>${new Date(item.time).toLocaleTimeString()}</td>
-          <td><span style="color:${item.status === 'approved' ? '#28a745' : item.status === 'rejected' ? '#dc3545' : '#ffd700'}">${item.status.toUpperCase()}</span></td>
-          <td>
-            ${item.status === 'pending' ? `
-              <button class="btn btn-success approve-wit" data-id="${id}" data-user="${item.userId}" data-amount="${item.amount}">Approve</button>
-              <button class="btn btn-danger reject-wit" data-id="${id}" data-user="${item.userId}" data-amount="${item.amount}">Reject & Refund</button>
-            ` : '-'}
-          </td>
-        `;
-        tbody.appendChild(row);
-      }
-      document.getElementById('statPendingWit').innerText = pendingCount;
+/* =========================================================
+   AUTH
+   ========================================================= */
+async function registerUser() {
+  const email = $("regEmail").value.trim();
+  const password = $("regPassword").value;
 
-      document.querySelectorAll('.approve-wit').forEach(btn => {
-        btn.onclick = () => {
-          get(ref(db, 'users/' + btn.dataset.user + '/balance')).then(snap => {
-            const currentBal = snap.val() || 0;
-            const newBal = Math.max(0, currentBal - parseFloat(btn.dataset.amount));
-            update(ref(db, 'users/' + btn.dataset.user), { balance: newBal });
-            update(ref(db, 'withdrawals/' + btn.dataset.id), { status: 'approved' });
-            alert("উইথড্র রিকোয়েস্ট অনুমোদিত হয়েছে!");
-          });
-        };
-      });
+  if (!email || !password) {
+    setAuthStatus("ইমেইল ও পাসওয়ার্ড দিন!", true);
+    return;
+  }
 
-      document.querySelectorAll('.reject-wit').forEach(btn => {
-        btn.onclick = () => {
-          update(ref(db, 'withdrawals/' + btn.dataset.id), { status: 'rejected' });
-          alert("উইথড্র বাতিল করা হয়েছে!");
-        };
-      });
+  if (password.length < 6) {
+    setAuthStatus("পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।", true);
+    return;
+  }
+
+  const button = $("registerBtn");
+  button.disabled = true;
+  setAuthStatus("একাউন্ট তৈরি হচ্ছে...");
+
+  try {
+    const credential =
+      await auth.createUserWithEmailAndPassword(email, password);
+
+    /*
+      User profile is stored by Firebase UID.
+      Password is NOT stored in Realtime Database.
+    */
+    await db.ref("users/" + credential.user.uid).set({
+      email: email,
+      balance: 0,
+      createdAt: firebase.database.ServerValue.TIMESTAMP
     });
 
-    // 3. Render Users
-    function renderUsers(users) {
-      const tbody = document.getElementById('usersTableBody');
-      tbody.innerHTML = '';
-      for (let u in users) {
-        const user = users[u];
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td><b>${u}</b></td>
-          <td>৳<span id="bal-${u}">${(user.balance || 0).toFixed(2)}</span></td>
-          <td><code>${user.password || 'N/A'}</code></td>
-          <td>
-            <input type="number" id="input-${u}" placeholder="নতুন ব্যালেন্স" style="width:100px; padding:4px;" />
-            <button class="btn btn-primary update-user-bal" data-user="${u}">Update</button>
-          </td>
-        `;
-        tbody.appendChild(row);
-      }
+    setAuthStatus("একাউন্ট সফলভাবে তৈরি হয়েছে।");
+  } catch (error) {
+    console.error("Registration error:", error);
+    setAuthStatus(firebaseError(error), true);
+  } finally {
+    button.disabled = false;
+  }
+}
 
-      document.querySelectorAll('.update-user-bal').forEach(btn => {
-        btn.onclick = () => {
-          const username = btn.dataset.user;
-          const val = parseFloat(document.getElementById('input-' + username).value);
-          if (isNaN(val)) return alert("সঠিক সংখ্যা লিখুন!");
-          update(ref(db, 'users/' + username), { balance: val }).then(() => alert("ব্যালেন্স আপডেট সফল!"));
-        };
-      });
+async function loginUser() {
+  const email = $("loginEmail").value.trim();
+  const password = $("loginPassword").value;
+
+  if (!email || !password) {
+    setAuthStatus("ইমেইল ও পাসওয়ার্ড দিন!", true);
+    return;
+  }
+
+  const button = $("loginBtn");
+  button.disabled = true;
+  setAuthStatus("লগইন হচ্ছে...");
+
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+    setAuthStatus("");
+  } catch (error) {
+    console.error("Login error:", error);
+    setAuthStatus(firebaseError(error), true);
+  } finally {
+    button.disabled = false;
+  }
+}
+
+async function logoutUser() {
+  try {
+    await auth.signOut();
+  } catch (error) {
+    console.error("Logout error:", error);
+    alert(firebaseError(error));
+  }
+}
+
+/* =========================================================
+   APP OPEN/CLOSE
+   ========================================================= */
+function openMainApp(user) {
+  currentUser = user;
+
+  hide($("authScreen"));
+  show($("mainAppContent"));
+
+  $("profileUserId").textContent = user.uid;
+  $("profileEmail").textContent = user.email || "";
+
+  loadSettings();
+  loadGames();
+  loadUserBalance();
+  listenUserChat();
+}
+
+function closeMainApp() {
+  currentUser = null;
+  currentUserBalance = 0;
+
+  if (balanceListener) {
+    db.ref(balanceListener).off();
+    balanceListener = null;
+  }
+
+  if (settingsListener) {
+    db.ref("settings").off("value", settingsListener);
+    settingsListener = null;
+  }
+
+  if (gamesListener) {
+    db.ref("games").off("value", gamesListener);
+    gamesListener = null;
+  }
+
+  if (chatListener) {
+    db.ref("chats").off("value", chatListener);
+    chatListener = null;
+  }
+
+  hide($("mainAppContent"));
+  show($("authScreen"), "flex");
+}
+
+/* =========================================================
+   SETTINGS
+   ========================================================= */
+function loadSettings() {
+  if (!db) return;
+
+  if (settingsListener) {
+    db.ref("settings").off("value", settingsListener);
+  }
+
+  settingsListener = snapshot => {
+    const data = snapshot.val() || {};
+
+    if (data.siteTitle) {
+      $("siteTitle").textContent = data.siteTitle;
+      $("authLogoText").textContent = data.siteTitle;
+      document.title = data.siteTitle;
     }
 
-    // 4. Upload and Manage Games
-    document.getElementById('saveGameBtn').onclick = () => {
-      const name = document.getElementById('gameNameInput').value.trim();
-      const cat = document.getElementById('gameCategorySelect').value;
-      const cover = document.getElementById('gameCoverInput').value.trim();
-      const html = document.getElementById('gameHtmlInput').value.trim();
+    if (data.bannerUrl) {
+      $("mainBanner").src = data.bannerUrl;
+    } else {
+      $("mainBanner").src =
+        "data:image/svg+xml;charset=UTF-8," +
+        encodeURIComponent(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="350">' +
+          '<rect width="100%" height="100%" fill="#222"/>' +
+          '<text x="50%" y="50%" fill="#ff8c00" font-size="42" text-anchor="middle">CV999</text>' +
+          '</svg>'
+        );
+    }
+  };
 
-      if (!name || !html) return alert("গেমের নাম এবং HTML কোড পূরণ করুন!");
+  db.ref("settings").on("value", settingsListener);
+}
 
-      push(ref(db, 'games'), {
-        gameName: name,
-        category: cat,
-        coverUrl: cover,
-        htmlCode: html
-      }).then(() => {
-        alert("গেম সফলভাবে আপলোড করা হয়েছে!");
-        document.getElementById('gameNameInput').value = '';
-        document.getElementById('gameCoverInput').value = '';
-        document.getElementById('gameHtmlInput').value = '';
-      });
-    };
+/* =========================================================
+   GAMES
+   ========================================================= */
+function loadGames() {
+  if (!db) return;
 
-    onValue(ref(db, 'games'), (snap) => {
-      const data = snap.val() || {};
-      const tbody = document.getElementById('gamesTableBody');
-      tbody.innerHTML = '';
-      for (let id in data) {
-        const game = data[id];
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td><b>${game.gameName}</b></td>
-          <td>${game.category.toUpperCase()}</td>
-          <td>
-            <button class="btn btn-danger delete-game" data-id="${id}">ডিলিট করুন</button>
-          </td>
-        `;
-        tbody.appendChild(row);
-      }
+  if (gamesListener) {
+    db.ref("games").off("value", gamesListener);
+  }
 
-      document.querySelectorAll('.delete-game').forEach(btn => {
-        btn.onclick = () => {
-          if (confirm("আপনি কি নিশ্চিত এই গেমটি মুছে ফেলতে চান?")) {
-            remove(ref(db, 'games/' + btn.dataset.id));
-          }
-        };
-      });
-    });
+  gamesListener = snapshot => {
+    allGames = snapshot.val() || {};
+    renderGameGrid();
+  };
 
-    // 5. Live Customer Support Chat
-    onValue(ref(db, 'chats'), (snap) => {
-      const data = snap.val() || {};
-      const userList = document.getElementById('chatUserList');
-      userList.innerHTML = '';
+  db.ref("games").on("value", gamesListener, error => {
+    console.error("Games listener error:", error);
+  });
+}
 
-      for (let u in data) {
-        const chip = document.createElement('div');
-        chip.className = `user-chip ${currentSelectedChatUser === u ? 'active' : ''}`;
-        chip.innerText = u;
-        chip.onclick = () => selectChatUser(u);
-        userList.appendChild(chip);
-      }
-    });
+function renderGameGrid() {
+  const grid = $("gameGrid");
+  grid.innerHTML = "";
 
-    function selectChatUser(username) {
-      currentSelectedChatUser = username;
-      document.getElementById('activeChatContainer').style.display = 'block';
-      document.getElementById('activeChatUser').innerText = username;
+  const ids = Object.keys(allGames);
 
-      onValue(ref(db, 'chats/' + username), (snap) => {
-        const box = document.getElementById('adminChatBox');
-        box.innerHTML = '';
-        const msgs = snap.val() || {};
-        for (let k in msgs) {
-          const m = msgs[k];
-          box.innerHTML += `<div class="msg ${m.sender === 'user' ? 'user' : 'admin'}">${m.message}</div>`;
-        }
-        box.scrollTop = box.scrollHeight;
-      });
+  ids.forEach(id => {
+    const game = allGames[id] || {};
+    const category = game.category || "hot";
+
+    if (
+      selectedCategory !== "hot" &&
+      category !== selectedCategory
+    ) {
+      return;
     }
 
-    document.getElementById('sendAdminReplyBtn').onclick = () => {
-      const text = document.getElementById('adminChatInput').value.trim();
-      if (!text || !currentSelectedChatUser) return;
+    const card = document.createElement("div");
+    card.className = "game-card";
 
-      push(ref(db, 'chats/' + currentSelectedChatUser), {
-        sender: 'admin',
-        message: text,
-        time: Date.now()
-      }).then(() => {
-        document.getElementById('adminChatInput').value = '';
-      });
-    };
+    const cover =
+      game.coverUrl ||
+      "https://via.placeholder.com/500x300/1a1b22/ff8c00?text=GAME";
 
-    // 6. Global Platform Settings
-    document.getElementById('saveSettingsBtn').onclick = () => {
-      const title = document.getElementById('settingSiteTitle').value.trim();
-      const num = document.getElementById('settingAdminNumber').value.trim();
-      const banner = document.getElementById('settingBannerUrl').value.trim();
+    card.innerHTML =
+      '<img src="' + escapeHTML(cover) + '" alt="">' +
+      '<div class="game-title">' +
+      escapeHTML(game.gameName || "Game") +
+      "</div>";
 
-      update(ref(db, 'settings'), {
-        siteTitle: title || 'CV999',
-        adminNumber: num || 'N/A',
-        bannerUrl: banner || ''
-      }).then(() => alert("সাইট সেটিংস সেভ হয়েছে!"));
-    };
+    card.addEventListener("click", () => launchGame(game));
 
-    // Load initial settings into input fields
-    get(ref(db, 'settings')).then(snap => {
-      const data = snap.val() || {};
-      if (data.siteTitle) document.getElementById('settingSiteTitle').value = data.siteTitle;
-      if (data.adminNumber) document.getElementById('settingAdminNumber').value = data.adminNumber;
-      if (data.bannerUrl) document.getElementById('settingBannerUrl').value = data.bannerUrl;
+    grid.appendChild(card);
+  });
+
+  if (!grid.children.length) {
+    grid.innerHTML =
+      '<div class="empty">এখন কোনো গেম পাওয়া যায়নি।</div>';
+  }
+}
+
+/* =========================================================
+   BALANCE
+   ========================================================= */
+function loadUserBalance() {
+  if (!currentUser || !db) return;
+
+  const path = "users/" + currentUser.uid + "/balance";
+
+  if (balanceListener) {
+    db.ref(balanceListener).off();
+  }
+
+  balanceListener = path;
+
+  db.ref(path).on(
+    "value",
+    snapshot => {
+      currentUserBalance = Number(snapshot.val() || 0);
+
+      $("userBalance").textContent =
+        currentUserBalance.toFixed(2);
+
+      $("profileBalance").textContent =
+        currentUserBalance.toFixed(2);
+    },
+    error => {
+      console.error("Balance listener error:", error);
+    }
+  );
+}
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+function switchView(viewId, element) {
+  document
+    .querySelectorAll(".view-section")
+    .forEach(section => section.classList.remove("active"));
+
+  document
+    .querySelectorAll(".nav-item")
+    .forEach(item => item.classList.remove("active"));
+
+  $(viewId).classList.add("active");
+  element.classList.add("active");
+}
+
+function switchCategory(category, element) {
+  document
+    .querySelectorAll(".cat-item")
+    .forEach(item => item.classList.remove("active"));
+
+  element.classList.add("active");
+
+  selectedCategory = category;
+  renderGameGrid();
+}
+
+/* =========================================================
+   GAME LAUNCHER
+   ========================================================= */
+function launchGame(game) {
+  if (!currentUser) return;
+
+  $("currentGameTitle").textContent =
+    game.gameName || "Game";
+
+  const html = game.htmlCode || `
+    <html>
+      <body style="font-family:Arial;text-align:center;padding:40px">
+        <h2>Game code পাওয়া যায়নি</h2>
+      </body>
+    </html>
+  `;
+
+  const bridge =
+    "<script>" +
+    "window.userBalance=" +
+    JSON.stringify(currentUserBalance) +
+    ";" +
+    "window.userId=" +
+    JSON.stringify(currentUser.uid) +
+    ";" +
+    "window.updateBalance=function(amount){" +
+    "window.parent.postMessage({type:'UPDATE_BALANCE',amount:Number(amount)},'*')" +
+    "};" +
+    "<\/script>";
+
+  $("gameIframe").srcdoc =
+    html.includes("<head>")
+      ? html.replace("<head>", "<head>" + bridge)
+      : bridge + html;
+
+  show($("gameLauncher"), "flex");
+}
+
+function closeGameLauncher() {
+  hide($("gameLauncher"));
+  $("gameIframe").srcdoc = "";
+}
+
+/* =========================================================
+   CHAT
+   ========================================================= */
+function listenUserChat() {
+  if (!currentUser || !db) return;
+
+  if (chatListener) {
+    db.ref("chats/" + currentUser.uid).off("value", chatListener);
+  }
+
+  chatListener = snapshot => {
+    const box = $("chatMessages");
+    box.innerHTML = "";
+
+    snapshot.forEach(child => {
+      const data = child.val() || {};
+      const div = document.createElement("div");
+
+      div.className = "chat-message";
+      div.innerHTML =
+        "<b>" +
+        escapeHTML(data.user || currentUser.email || "User") +
+        "</b><br>" +
+        escapeHTML(data.message || "");
+
+      box.appendChild(div);
     });
-  </script>
+
+    box.scrollTop = box.scrollHeight;
+  };
+
+  db.ref("chats/" + currentUser.uid)
+    .limitToLast(100)
+    .on("value", chatListener);
+}
+
+async function sendChat() {
+  if (!currentUser) return;
+
+  const input = $("chatInput");
+  const message = input.value.trim();
+
+  if (!message) return;
+
+  input.value = "";
+
+  try {
+    await db.ref("chats/" + currentUser.uid).push({
+      user: currentUser.email || currentUser.uid,
+      message: message,
+      timestamp: firebase.database.ServerValue.TIMESTAMP
+    });
+  } catch (error) {
+    console.error("Chat error:", error);
+    alert(firebaseError(error));
+  }
+}
+
+/* =========================================================
+   DEPOSIT / WITHDRAW REQUESTS
+   ========================================================= */
+async function submitDeposit() {
+  if (!currentUser) return;
+
+  const amount = Number($("depositAmount").value);
+  const reference = $("depositRef").value.trim();
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    alert("সঠিক পরিমাণ দিন।");
+    return;
+  }
+
+  try {
+    await db.ref("deposits").push({
+      uid: currentUser.uid,
+      email: currentUser.email || "",
+      amount: amount,
+      reference: reference,
+      status: "pending",
+      timestamp: firebase.database.ServerValue.TIMESTAMP
+    });
+
+    alert("ডিপোজিট রিকোয়েস্ট পাঠানো হয়েছে।");
+
+    $("depositAmount").value = "";
+    $("depositRef").value = "";
+
+    closeModals();
+  } catch (error) {
+    console.error("Deposit request error:", error);
+    alert(firebaseError(error));
+  }
+}
+
+async function submitWithdraw() {
+  if (!currentUser) return;
+
+  const amount = Number($("withdrawAmount").value);
+  const method = $("withdrawMethod").value.trim();
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    alert("সঠিক পরিমাণ দিন।");
+    return;
+  }
+
+  if (amount > currentUserBalance) {
+    alert("পর্যাপ্ত ব্যালেন্স নেই।");
+    return;
+  }
+
+  try {
+    await db.ref("withdrawals").push({
+      uid: currentUser.uid,
+      email: currentUser.email || "",
+      amount: amount,
+      method: method,
+      status: "pending",
+      timestamp: firebase.database.ServerValue.TIMESTAMP
+    });
+
+    alert("উইথড্র রিকোয়েস্ট পাঠানো হয়েছে।");
+
+    $("withdrawAmount").value = "";
+    $("withdrawMethod").value = "";
+
+    closeModals();
+  } catch (error) {
+    console.error("Withdraw request error:", error);
+    alert(firebaseError(error));
+  }
+}
+
+function closeModals() {
+  document.querySelectorAll(".modal").forEach(modal => hide(modal));
+}
+
+/* =========================================================
+   GAME MESSAGE BRIDGE
+   ========================================================= */
+window.addEventListener("message", event => {
+  if (!currentUser) return;
+  if (!event.data || event.data.type !== "UPDATE_BALANCE") return;
+
+  const amount = Number(event.data.amount);
+
+  if (!Number.isFinite(amount) || amount < 0) return;
+
+  /*
+    IMPORTANT:
+    Production balance changes should be validated/enforced
+    server-side with secure Firebase Rules/Cloud Functions.
+  */
+  db.ref("users/" + currentUser.uid + "/balance")
+    .set(amount)
+    .catch(error => console.error("Balance update error:", error));
+});
+
+/* =========================================================
+   EVENT BINDINGS
+   ========================================================= */
+document.addEventListener("DOMContentLoaded", () => {
+
+  $("loginTabBtn").addEventListener("click", () => {
+    $("loginTabBtn").classList.add("active");
+    $("registerTabBtn").classList.remove("active");
+
+    $("loginForm").classList.remove("hidden");
+    $("registerForm").classList.add("hidden");
+
+    setAuthStatus("");
+  });
+
+  $("registerTabBtn").addEventListener("click", () => {
+    $("registerTabBtn").classList.add("active");
+    $("loginTabBtn").classList.remove("active");
+
+    $("registerForm").classList.remove("hidden");
+    $("loginForm").classList.add("hidden");
+
+    setAuthStatus("");
+  });
+
+  $("loginBtn").addEventListener("click", loginUser);
+  $("registerBtn").addEventListener("click", registerUser);
+  $("logoutBtn").addEventListener("click", logoutUser);
+
+  $("loginPassword").addEventListener("keydown", event => {
+    if (event.key === "Enter") loginUser();
+  });
+
+  $("regPassword").addEventListener("keydown", event => {
+    if (event.key === "Enter") registerUser();
+  });
+
+  $("refreshBalanceBtn").addEventListener("click", loadUserBalance);
+
+  $("depositBtn").addEventListener("click", () => {
+    show($("depositModal"), "flex");
+  });
+
+  $("withdrawBtn").addEventListener("click", () => {
+    show($("withdrawModal"), "flex");
+  });
+
+  $("submitDeposit").addEventListener("click", submitDeposit);
+  $("submitWithdraw").addEventListener("click", submitWithdraw);
+
+  document
+    .querySelectorAll(".closeModal")
+    .forEach(button => button.addEventListener("click", closeModals));
+
+  document
+    .querySelectorAll(".nav-item")
+    .forEach(item => {
+      item.addEventListener("click", () =>
+        switchView(item.dataset.view, item)
+      );
+    });
+
+  document
+    .querySelectorAll(".cat-item")
+    .forEach(item => {
+      item.addEventListener("click", () =>
+        switchCategory(item.dataset.cat, item)
+      );
+    });
+
+  $("sendChatBtn").addEventListener("click", sendChat);
+
+  $("chatInput").addEventListener("keydown", event => {
+    if (event.key === "Enter") sendChat();
+  });
+
+  $("closeGameLauncherBtn").addEventListener(
+    "click",
+    closeGameLauncher
+  );
+
+  /*
+    Initialize Firebase before registering auth state listener.
+  */
+  if (!initializeFirebase()) return;
+
+  /*
+    This is the important authentication fix:
+    the app now follows Firebase Auth state instead of
+    using localStorage + plaintext passwords in RTDB.
+  */
+  auth.onAuthStateChanged(
+    user => {
+      if (user) {
+        openMainApp(user);
+      } else {
+        closeMainApp();
+      }
+    },
+    error => {
+      console.error("Auth state error:", error);
+      setAuthStatus(firebaseError(error), true);
+    }
+  );
+});
+</script>
+
 </body>
 </html>
