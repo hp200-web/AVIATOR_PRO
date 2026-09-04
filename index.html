@@ -1,430 +1,979 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="siteTitle">CV999 - VIP Gaming Platform</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- Firebase Compatibility Libraries -->
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CV999 - VIP Gaming Platform</title>
 
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
-    body { background-color: #08080a; color: #fff; padding-bottom: 70px; overflow-x: hidden; }
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 
-    #authScreen {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: #08080a; z-index: 99999; display: flex; justify-content: center; align-items: center; padding: 20px;
-    }
-    .auth-box { background: #14151a; border: 1px solid #ff8c00; padding: 25px; border-radius: 12px; width: 100%; max-width: 380px; text-align: center; }
-    .auth-logo { font-size: 26px; font-weight: 900; background: linear-gradient(45deg, #ffd700, #ff8c00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 15px; }
-    .tab-toggle { display: flex; margin-bottom: 15px; background: #0a0b0d; border-radius: 6px; padding: 3px; }
-    .tab-btn { flex: 1; background: none; border: none; color: #888; padding: 8px; font-weight: bold; cursor: pointer; border-radius: 4px; font-size: 12px; }
-    .tab-btn.active { background: #ff8c00; color: #000; }
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-    .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 15px; background: rgba(20, 20, 25, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(252, 163, 17, 0.2); position: sticky; top: 0; z-index: 100; }
-    .logo-text { font-size: 20px; font-weight: 900; background: linear-gradient(45deg, #ffd700, #ff8c00); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: 1px; }
-    .balance-box { display: flex; align-items: center; gap: 6px; background: #121318; border: 1px solid rgba(255, 215, 0, 0.3); padding: 5px 12px; border-radius: 20px; font-size: 12px; }
-    .action-btns { display: flex; gap: 6px; }
-    .top-btn { background: linear-gradient(135deg, #ff8c00, #e65100); color: #fff; border: none; padding: 6px 12px; border-radius: 15px; font-weight: bold; font-size: 11px; cursor: pointer; }
-    .top-btn.withdraw { background: linear-gradient(135deg, #dc3545, #b02a37); }
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:#0f1014;color:#fff;font-family:Arial,sans-serif}
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
 
-    .banner-container { width: 100%; padding: 10px; }
-    .banner-img { width: 100%; height: 140px; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.1); }
+#authScreen{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:linear-gradient(145deg,#101114,#191b21)
+}
+.auth-box{
+  width:100%;max-width:420px;background:#191b20;border:1px solid #2d3038;
+  border-radius:18px;padding:24px;box-shadow:0 18px 60px rgba(0,0,0,.45)
+}
+.auth-logo{text-align:center;font-size:28px;font-weight:800;color:#ff8c00;margin-bottom:22px}
+.tabs{display:flex;gap:5px;background:#101114;padding:4px;border-radius:10px;margin-bottom:18px}
+.tabs button{
+  flex:1;border:0;background:transparent;color:#999;padding:12px;border-radius:8px
+}
+.tabs button.active{background:#ff8c00;color:#111;font-weight:800}
+.form{display:flex;flex-direction:column;gap:12px}
+.form input,.modal-box input,.chat-input{
+  width:100%;padding:13px;background:#101114;color:#fff;border:1px solid #353841;
+  border-radius:10px;outline:none
+}
+.form input:focus,.modal-box input:focus,.chat-input:focus{border-color:#ff8c00}
+.primary{
+  border:0;background:#ff8c00;color:#111;font-weight:800;padding:13px;border-radius:10px
+}
+.primary:disabled{opacity:.55;cursor:not-allowed}
+.auth-status{text-align:center;min-height:22px;margin-top:10px;color:#ffb15c;font-size:13px}
 
-    .category-nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 0 10px 10px; }
-    .cat-item { background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; text-align: center; padding: 8px 0; color: #aaa; font-size: 11px; cursor: pointer; }
-    .cat-item.active { background: linear-gradient(180deg, rgba(255, 140, 0, 0.2), transparent); border-color: #ff8c00; color: #ff8c00; font-weight: bold; }
-    .cat-item i { display: block; font-size: 16px; margin-bottom: 2px; }
+#mainAppContent{display:none;min-height:100vh;padding-bottom:72px}
+header{
+  position:sticky;top:0;z-index:20;background:#181a20;border-bottom:1px solid #2a2d34;
+  padding:13px 15px;display:flex;align-items:center;justify-content:space-between
+}
+.brand{color:#ff8c00;font-weight:800;font-size:18px}
+.balance{font-weight:800}.balance small{color:#888;font-weight:400;margin-right:4px}
 
-    .game-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 0 10px; }
-    .game-card { background: #121318; border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 8px; overflow: hidden; cursor: pointer; }
-    .game-card img { width: 100%; height: 90px; object-fit: cover; display: block; }
-    .game-title { font-size: 10px; text-align: center; padding: 5px 2px; background: #0b0c0f; color: #ddd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.container{max-width:950px;margin:auto;padding:14px}
+.view-section{display:none}.view-section.active{display:block}
 
-    .view-section { display: none; padding: 10px 15px; }
-    .view-section.active { display: block; }
+.banner{
+  width:100%;height:175px;object-fit:cover;border-radius:14px;background:#222;display:block
+}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.action{
+  border:1px solid #30333a;background:#1a1c21;color:#fff;padding:13px;border-radius:10px
+}
+.action:hover{border-color:#ff8c00}
 
-    .chat-container { display: flex; flex-direction: column; height: calc(100vh - 130px); }
-    .chat-box { flex: 1; background: #121318; border: 1px solid #222; border-radius: 8px; padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
-    .chat-msg { padding: 8px 12px; border-radius: 6px; font-size: 12px; max-width: 80%; word-break: break-all; }
-    .chat-msg.user { background: #ff8c00; color: #000; align-self: flex-end; font-weight: bold; }
-    .chat-msg.admin { background: #22232a; color: #fff; align-self: flex-start; border: 1px solid #333; }
-    .chat-input-row { display: flex; gap: 6px; }
+.categories{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px}
+.cat-item{
+  white-space:nowrap;border:1px solid #30333a;background:#1a1c21;color:#aaa;
+  padding:8px 14px;border-radius:20px
+}
+.cat-item.active{background:#ff8c00;color:#111;border-color:#ff8c00}
 
-    .game-launcher { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 9999; flex-direction: column; }
-    .game-launcher-header { height: 45px; background: #111; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; border-bottom: 1px solid #222; }
-    .game-frame { width: 100%; height: calc(100vh - 45px); border: none; }
+.game-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.game-card{
+  overflow:hidden;background:#191b20;border:1px solid #292c33;border-radius:12px
+}
+.game-card img{display:block;width:100%;height:125px;object-fit:cover}
+.game-title{padding:10px;font-weight:700}
+.empty{text-align:center;color:#777;padding:35px;grid-column:1/-1}
 
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center; }
-    .modal-content { background: #14151a; padding: 20px; border-radius: 12px; width: 90%; max-width: 350px; border: 1px solid #ff8c00; position: relative; }
-    .close-btn { position: absolute; right: 15px; top: 12px; color: #888; font-size: 20px; cursor: pointer; }
-    .notice-box { background: rgba(255, 140, 0, 0.1); padding: 10px; border-radius: 8px; text-align: center; margin: 10px 0; border: 1px dashed #ff8c00; color: #ffd700; font-size: 12px; font-weight: bold; }
-    .input-field { width: 100%; padding: 10px; margin: 6px 0; background: #0a0b0d; border: 1px solid #282930; color: #fff; border-radius: 6px; outline: none; font-size: 13px; }
-    .submit-btn { width: 100%; padding: 10px; background: linear-gradient(90deg, #ff8c00, #e65100); border: none; color: #fff; font-weight: bold; border-radius: 6px; margin-top: 8px; cursor: pointer; font-size: 13px; }
+.chat-box,.profile-card{
+  background:#191b20;border:1px solid #292c33;border-radius:12px;padding:14px
+}
+.chat-messages{
+  height:260px;overflow-y:auto;border:1px solid #30333a;border-radius:9px;padding:10px;
+  margin-bottom:9px
+}
+.chat-message{background:#23252b;border-radius:8px;padding:8px;margin-bottom:7px;font-size:13px}
+.chat-row{display:flex;gap:7px}.chat-input{flex:1}
 
-    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; height: 55px; background: rgba(15, 16, 20, 0.95); border-top: 1px solid rgba(255, 255, 255, 0.08); display: flex; justify-content: space-around; align-items: center; z-index: 1000; }
-    .nav-item { color: #666; font-size: 10px; text-decoration: none; text-align: center; cursor: pointer; }
-    .nav-item.active { color: #ff8c00; font-weight: bold; }
-    .nav-item i { font-size: 16px; display: block; margin-bottom: 2px; }
-  </style>
+.bottom-nav{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;
+  background:#181a20;border-top:1px solid #2a2d34
+}
+.nav-item{
+  flex:1;text-align:center;padding:10px 4px;color:#888;font-size:12px
+}
+.nav-item i{display:block;font-size:18px;margin-bottom:3px}
+.nav-item.active{color:#ff8c00}
+
+.secondary{
+  border:1px solid #3b3e46;background:#24262c;color:#fff;padding:11px;border-radius:9px
+}
+.danger{
+  border:0;background:#c83e3e;color:#fff;padding:11px;border-radius:9px;margin-top:8px
+}
+
+.modal{
+  position:fixed;inset:0;z-index:70;background:rgba(0,0,0,.75);
+  display:none;align-items:center;justify-content:center;padding:16px
+}
+.modal-box{
+  width:100%;max-width:420px;background:#191b20;border:1px solid #30333a;
+  border-radius:15px;padding:18px
+}
+.modal-box h3{margin-top:0}
+.modal-actions{display:flex;gap:8px;margin-top:10px}
+.modal-actions>*{flex:1}
+
+#gameLauncher{
+  position:fixed;inset:0;z-index:100;background:#08090b;display:none;flex-direction:column
+}
+.game-head{
+  height:52px;flex:none;background:#181a20;padding:0 12px;display:flex;
+  align-items:center;justify-content:space-between
+}
+.game-close{
+  border:0;background:#292c33;color:#fff;padding:8px 12px;border-radius:8px
+}
+.game-frame{width:100%;height:calc(100% - 52px);border:0;background:#fff}
+
+@media(min-width:650px){
+  .game-grid{grid-template-columns:repeat(4,1fr)}
+  .game-card img{height:140px}
+}
+</style>
 </head>
+
 <body>
 
-  <!-- Auth Screen -->
-  <div id="authScreen">
-    <div class="auth-box">
-      <div class="auth-logo" id="authLogoText">CV999</div>
-      <div class="tab-toggle">
-        <button class="tab-btn active" id="loginTabBtn" type="button">লগইন</button>
-        <button class="tab-btn" id="registerTabBtn" type="button">রেজিস্ট্রেশন</button>
-      </div>
+<!-- ================= AUTH ================= -->
+<section id="authScreen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <i class="fa-solid fa-gamepad"></i>
+      <span id="authLogoText">CV999</span>
+    </div>
 
-      <div id="loginForm">
-        <input type="text" id="loginUsername" class="input-field" placeholder="ইউজারনেম বা মোবাইল নম্বর">
-        <input type="password" id="loginPassword" class="input-field" placeholder="পাসওয়ার্ড">
-        <button class="submit-btn" id="loginBtn" type="button">লগইন করুন</button>
-      </div>
+    <div class="tabs">
+      <button id="loginTabBtn" class="active">লগইন</button>
+      <button id="registerTabBtn">রেজিস্ট্রেশন</button>
+    </div>
 
-      <div id="registerForm" style="display:none;">
-        <input type="text" id="regUsername" class="input-field" placeholder="ইউজারনেম দিন">
-        <input type="password" id="regPassword" class="input-field" placeholder="পাসওয়ার্ড দিন">
-        <button class="submit-btn" id="registerBtn" type="button">একাউন্ট তৈরি করুন</button>
+    <div id="loginForm" class="form">
+      <input id="loginEmail" type="email" placeholder="ইমেইল" autocomplete="email">
+      <input id="loginPassword" type="password" placeholder="পাসওয়ার্ড" autocomplete="current-password">
+      <button id="loginBtn" class="primary">লগইন</button>
+    </div>
+
+    <div id="registerForm" class="form hidden">
+      <input id="regEmail" type="email" placeholder="ইমেইল" autocomplete="email">
+      <input id="regPassword" type="password" placeholder="কমপক্ষে ৬ অক্ষরের পাসওয়ার্ড" autocomplete="new-password">
+      <button id="registerBtn" class="primary">একাউন্ট তৈরি করুন</button>
+    </div>
+
+    <div id="authStatus" class="auth-status"></div>
+  </div>
+</section>
+
+<!-- ================= MAIN APP ================= -->
+<main id="mainAppContent">
+
+<header>
+  <div class="brand">
+    <i class="fa-solid fa-gamepad"></i>
+    <span id="siteTitle">CV999</span>
+  </div>
+  <div class="balance">
+    <small>Balance</small>
+    ৳<span id="userBalance">0.00</span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- HOME -->
+  <section id="homeView" class="view-section active">
+    <img id="mainBanner" class="banner" alt="Banner">
+
+    <div class="actions">
+      <button id="depositBtn" class="action">
+        <i class="fa-solid fa-plus"></i> ডিপোজিট
+      </button>
+      <button id="withdrawBtn" class="action">
+        <i class="fa-solid fa-minus"></i> উইথড্র
+      </button>
+    </div>
+
+    <div class="categories">
+      <button class="cat-item active" data-cat="hot">সব</button>
+      <button class="cat-item" data-cat="casino">ক্যাসিনো</button>
+      <button class="cat-item" data-cat="slots">স্লট</button>
+      <button class="cat-item" data-cat="sports">স্পোর্টস</button>
+    </div>
+
+    <div id="gameGrid" class="game-grid"></div>
+  </section>
+
+  <!-- CHAT -->
+  <section id="chatView" class="view-section">
+    <h3>লাইভ চ্যাট</h3>
+    <div class="chat-box">
+      <div id="chatMessages" class="chat-messages"></div>
+      <div class="chat-row">
+        <input id="chatInput" class="chat-input" placeholder="মেসেজ লিখুন...">
+        <button id="sendChatBtn" class="primary">পাঠান</button>
       </div>
+    </div>
+  </section>
+
+  <!-- PROFILE -->
+  <section id="profileView" class="view-section">
+    <h3>প্রোফাইল</h3>
+    <div class="profile-card">
+      <p>UID: <b id="profileUserId">—</b></p>
+      <p>ইমেইল: <b id="profileEmail">—</b></p>
+      <p>ব্যালেন্স: <b>৳<span id="profileBalance">0.00</span></b></p>
+
+      <button id="refreshBalanceBtn" class="secondary">
+        ব্যালেন্স রিফ্রেশ
+      </button>
+
+      <br>
+
+      <button id="logoutBtn" class="danger">
+        লগআউট
+      </button>
+    </div>
+  </section>
+
+</div>
+
+<nav class="bottom-nav">
+  <div class="nav-item active" data-view="homeView">
+    <i class="fa-solid fa-house"></i>হোম
+  </div>
+  <div class="nav-item" data-view="chatView">
+    <i class="fa-solid fa-comments"></i>চ্যাট
+  </div>
+  <div class="nav-item" data-view="profileView">
+    <i class="fa-solid fa-user"></i>প্রোফাইল
+  </div>
+</nav>
+
+</main>
+
+<!-- ================= DEPOSIT MODAL ================= -->
+<div id="depositModal" class="modal">
+  <div class="modal-box">
+    <h3>ডিপোজিট রিকোয়েস্ট</h3>
+    <input id="depositAmount" type="number" min="1" placeholder="পরিমাণ">
+    <input id="depositRef" placeholder="রেফারেন্স / ট্রানজেকশন আইডি">
+
+    <div class="modal-actions">
+      <button class="secondary closeModal">বন্ধ</button>
+      <button id="submitDeposit" class="primary">সাবমিট</button>
     </div>
   </div>
+</div>
 
-  <!-- Main Content -->
-  <div id="mainAppContent" style="display:none;">
-    <div class="header">
-      <div class="logo-text" id="displayLogo">CV999</div>
-      <div class="balance-box">
-        <i class="fa-solid fa-coins" style="color: #ffd700;"></i>
-        <span>৳ <b id="userBalance">0.00</b></span>
-        <i class="fa-solid fa-rotate-right" id="refreshBalanceBtn" style="color:#ff8c00; cursor:pointer;"></i>
-      </div>
-      <div class="action-btns">
-        <button class="top-btn" id="openDepositModalBtn">ডিপোজিট</button>
-        <button class="top-btn withdraw" id="openWithdrawModalBtn">উইথড্র</button>
-      </div>
-    </div>
+<!-- ================= WITHDRAW MODAL ================= -->
+<div id="withdrawModal" class="modal">
+  <div class="modal-box">
+    <h3>উইথড্র রিকোয়েস্ট</h3>
+    <input id="withdrawAmount" type="number" min="1" placeholder="পরিমাণ">
+    <input id="withdrawMethod" placeholder="মেথড / নম্বর">
 
-    <div id="homeView" class="view-section active">
-      <div class="banner-container">
-        <img id="mainBanner" src="https://via.placeholder.com/400x140/111/ff8c00?text=VIP+Gaming" class="banner-img">
-      </div>
-      <div class="category-nav">
-        <div class="cat-item active" onclick="switchCat('hot', this)"><i class="fa-solid fa-fire"></i>হট গেম</div>
-        <div class="cat-item" onclick="switchCat('slot', this)"><i class="fa-solid fa-gamepad"></i>স্লট</div>
-        <div class="cat-item" onclick="switchCat('fish', this)"><i class="fa-solid fa-fish-fins"></i>ফিশিং</div>
-        <div class="cat-item" onclick="switchCat('casino', this)"><i class="fa-solid fa-dice"></i>ক্যাসিনো</div>
-      </div>
-      <div class="game-grid" id="gameGrid"></div>
-    </div>
-
-    <div id="chatView" class="view-section">
-      <div class="chat-container">
-        <h3 style="color:#ff8c00; margin-bottom:8px; text-align:center; font-size:14px;"><i class="fa-solid fa-headset"></i> লাইভ কাস্টমার কেয়ার</h3>
-        <div class="chat-box" id="chatBox"></div>
-        <div class="chat-input-row">
-          <input type="text" id="chatInput" class="input-field" placeholder="মেসেজ লিখুন..." style="margin:0;">
-          <button class="submit-btn" id="sendChatBtn" style="width: 75px; margin-top:0;">পাঠান</button>
-        </div>
-      </div>
-    </div>
-
-    <div id="promoView" class="view-section">
-      <h3 style="color:#ff8c00; margin-bottom:10px;">বিশেষ অফার</h3>
-      <div style="background:#121318; padding:15px; border-radius:8px; border:1px solid #222; font-size:13px;">
-        <p>🔥 প্রতিটি ডিপোজিটে পান ২০% ইনস্ট্যান্ট বোনাস!</p>
-      </div>
-    </div>
-
-    <div id="profileView" class="view-section">
-      <h3 style="color:#ff8c00; margin-bottom:10px;">ইউজার প্রোফাইল</h3>
-      <div style="background:#121318; padding:15px; border-radius:8px; border:1px solid #222; font-size:13px;">
-        <p><strong>ইউজারনেম:</strong> <span id="profileUserId">-</span></p>
-        <p style="margin-top:8px;"><strong>স্ট্যাটাস:</strong> <span style="color:#28a745;">অ্যাক্টিভ ✅</span></p>
-        <button id="logoutBtn" style="background:#dc3545; color:#fff; border:none; padding:8px; border-radius:6px; margin-top:15px; width:100%; font-weight:bold; cursor:pointer;">লগআউট</button>
-      </div>
-    </div>
-
-    <!-- Launcher & Modals -->
-    <div class="game-launcher" id="gameLauncher">
-      <div class="game-launcher-header">
-        <span style="color:#ff8c00; font-weight:bold; font-size:13px;" id="currentGameTitle">Gaming Screen</span>
-        <button id="closeGameLauncherBtn" style="background:#dc3545; color:#fff; border:none; padding:4px 10px; border-radius:4px; font-weight:bold; cursor:pointer;">বের হন</button>
-      </div>
-      <iframe class="game-frame" id="gameIframe"></iframe>
-    </div>
-
-    <div class="modal" id="depositModal">
-      <div class="modal-content">
-        <span class="close-btn" id="closeDepositModalBtn">&times;</span>
-        <h3 style="color:#ff8c00; text-align:center; font-size:15px; margin-bottom:8px;">ডিপোজিট রিকোয়েস্ট</h3>
-        <div class="notice-box">পেমেন্ট নম্বর: <br><span id="displayAdminNumber">লোড হচ্ছে...</span></div>
-        <input type="number" id="depAmount" class="input-field" placeholder="টাকার পরিমাণ (৳)">
-        <input type="text" id="depTrx" class="input-field" placeholder="Transaction ID">
-        <button class="submit-btn" id="submitDepositBtn">ডিপোজিট জমা দিন</button>
-      </div>
-    </div>
-
-    <div class="modal" id="withdrawModal">
-      <div class="modal-content">
-        <span class="close-btn" id="closeWithdrawModalBtn">&times;</span>
-        <h3 style="color:#ff8c00; text-align:center; font-size:15px; margin-bottom:8px;">উইথড্র রিকোয়েস্ট</h3>
-        <input type="number" id="witAmount" class="input-field" placeholder="উইথড্র পরিমাণ (৳)">
-        <input type="text" id="witNumber" class="input-field" placeholder="বিকাশ/নগদ নম্বর">
-        <button class="submit-btn" id="submitWithdrawBtn">উইথড্র পাঠান</button>
-      </div>
-    </div>
-
-    <div class="bottom-nav">
-      <div class="nav-item active" onclick="switchNav('homeView', this)"><i class="fa-solid fa-house"></i>হোম</div>
-      <div class="nav-item" onclick="switchNav('promoView', this)"><i class="fa-solid fa-gift"></i>প্রমোশন</div>
-      <div class="nav-item" onclick="switchNav('chatView', this)"><i class="fa-solid fa-headset"></i>সেবা</div>
-      <div class="nav-item" onclick="switchNav('profileView', this)"><i class="fa-solid fa-user"></i>প্রোফাইল</div>
+    <div class="modal-actions">
+      <button class="secondary closeModal">বন্ধ</button>
+      <button id="submitWithdraw" class="primary">সাবমিট</button>
     </div>
   </div>
+</div>
 
-  <script>
-    // Firebase Config Initialization
-    var firebaseConfig = {
-      apiKey: "AIzaSyAyTOnCm5IuPcB-yvGjFl3KbwRVxNrcNSY",
-      authDomain: "ff-to-gaming-4ea1b.firebaseapp.com",
-      databaseURL: "https://ff-to-gaming-4ea1b-default-rtdb.firebaseio.com",
-      projectId: "ff-to-gaming-4ea1b",
-      storageBucket: "ff-to-gaming-4ea1b.appspot.com",
-      messagingSenderId: "816776130875",
-      appId: "1:816776130875:web:c3e7984e0de53cbd89871e"
-    };
+<!-- ================= GAME LAUNCHER ================= -->
+<div id="gameLauncher">
+  <div class="game-head">
+    <b id="currentGameTitle">Game</b>
+    <button id="closeGameLauncherBtn" class="game-close">বন্ধ করুন</button>
+  </div>
+  <iframe
+    id="gameIframe"
+    class="game-frame"
+    sandbox="allow-scripts allow-forms allow-modals allow-popups">
+  </iframe>
+</div>
 
-    firebase.initializeApp(firebaseConfig);
-    var db = firebase.database();
+<script>
+"use strict";
 
-    var loggedUser = localStorage.getItem('logged_user');
-    var allGames = {};
-    var selectedCategory = 'hot';
-    var currentUserBalance = 0;
+/* =========================================================
+   FIREBASE CONFIG
+   ========================================================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyAyTOnCm5IuPcB-yvGjFl3KbwRVxNrcNSY",
+  authDomain: "ff-to-gaming-4ea1b.firebaseapp.com",
+  databaseURL: "https://ff-to-gaming-4ea1b-default-rtdb.firebaseio.com",
+  projectId: "ff-to-gaming-4ea1b",
+  storageBucket: "ff-to-gaming-4ea1b.appspot.com",
+  messagingSenderId: "816776130875",
+  appId: "1:816776130875:web:c3e7984e0de53cbd89871e"
+};
 
-    window.onload = function() {
-      if (loggedUser) {
-        document.getElementById('authScreen').style.display = 'none';
-        document.getElementById('mainAppContent').style.display = 'block';
-        document.getElementById('profileUserId').innerText = loggedUser;
-        loadUserBalance();
-        listenUserChats();
-      }
+let auth = null;
+let db = null;
+let currentUser = null;
+let currentUserBalance = 0;
+let allGames = {};
+let selectedCategory = "hot";
+let balanceListener = null;
+let settingsListener = null;
+let gamesListener = null;
+let chatListener = null;
 
-      // Settings Observer
-      db.ref('settings').on('value', function(snapshot) {
-        var data = snapshot.val() || {};
-        if(data.siteTitle) {
-          document.getElementById('siteTitle').innerText = data.siteTitle;
-          document.getElementById('displayLogo').innerText = data.siteTitle;
-          document.getElementById('authLogoText').innerText = data.siteTitle;
-        }
-        if(data.bannerUrl) document.getElementById('mainBanner').src = data.bannerUrl;
-        if(data.adminNumber) document.getElementById('displayAdminNumber').innerText = data.adminNumber;
-      });
+/* =========================================================
+   HELPERS
+   ========================================================= */
+const $ = id => document.getElementById(id);
 
-      // Games Observer
-      db.ref('games').on('value', function(snapshot) {
-        allGames = snapshot.val() || {};
-        renderGameGrid();
-      });
-    };
+function show(el, display = "block") {
+  if (el) el.style.display = display;
+}
 
-    // Tab Switcher
-    document.getElementById('loginTabBtn').onclick = function() {
-      document.getElementById('loginForm').style.display = 'block';
-      document.getElementById('registerForm').style.display = 'none';
-      this.classList.add('active');
-      document.getElementById('registerTabBtn').classList.remove('active');
-    };
+function hide(el) {
+  if (el) el.style.display = "none";
+}
 
-    document.getElementById('registerTabBtn').onclick = function() {
-      document.getElementById('loginForm').style.display = 'none';
-      document.getElementById('registerForm').style.display = 'block';
-      this.classList.add('active');
-      document.getElementById('loginTabBtn').classList.remove('active');
-    };
+function setAuthStatus(message, isError = false) {
+  $("authStatus").textContent = message || "";
+  $("authStatus").style.color = isError ? "#ff6565" : "#ffb15c";
+}
 
-    // Auth Actions
-    document.getElementById('registerBtn').onclick = function() {
-      var u = document.getElementById('regUsername').value.trim();
-      var p = document.getElementById('regPassword').value.trim();
-      if(!u || !p) return alert("ইউজারনেম ও পাসওয়ার্ড দিন!");
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#039;"
+  }[char]));
+}
 
-      db.ref('users/' + u).once('value', function(snap) {
-        if(snap.exists()) {
-          alert("এই ইউজারনেম আগে থেকেই আছে!");
-        } else {
-          db.ref('users/' + u).set({ password: p, balance: 0 }).then(function() {
-            alert("একাউন্ট তৈরি সফল হয়েছে!");
-            document.getElementById('loginTabBtn').click();
-          });
-        }
-      });
-    };
+function firebaseError(error) {
+  const code = error && error.code ? error.code : "";
 
-    document.getElementById('loginBtn').onclick = function() {
-      var u = document.getElementById('loginUsername').value.trim();
-      var p = document.getElementById('loginPassword').value.trim();
-      if(!u || !p) return alert("তথ্য সঠিকভাবে দিন!");
+  const messages = {
+    "auth/invalid-email": "ইমেইল ঠিক নয়।",
+    "auth/user-not-found": "এই ইমেইলে কোনো একাউন্ট পাওয়া যায়নি।",
+    "auth/wrong-password": "পাসওয়ার্ড ভুল।",
+    "auth/invalid-credential": "ইমেইল অথবা পাসওয়ার্ড ভুল।",
+    "auth/email-already-in-use": "এই ইমেইল আগে থেকেই ব্যবহার করা হয়েছে।",
+    "auth/weak-password": "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।",
+    "auth/operation-not-allowed": "Firebase Console-এ Email/Password Sign-in চালু করুন।",
+    "auth/network-request-failed": "নেটওয়ার্ক সমস্যা হয়েছে।",
+    "auth/too-many-requests": "অনেকবার চেষ্টা করা হয়েছে। কিছুক্ষণ পরে আবার চেষ্টা করুন।",
+    "database/permission-denied": "Database permission denied। Firebase Rules পরীক্ষা করুন।"
+  };
 
-      db.ref('users/' + u).once('value', function(snap) {
-        if(!snap.exists()) {
-          alert("একাউন্ট পাওয়া যায়নি!");
-        } else {
-          if(snap.val().password === p) {
-            localStorage.setItem('logged_user', u);
-            location.reload();
-          } else {
-            alert("ভুল পাসওয়ার্ড!");
-          }
-        }
-      });
-    };
+  return messages[code] || error?.message || "অজানা সমস্যা হয়েছে।";
+}
 
-    document.getElementById('logoutBtn').onclick = function() {
-      localStorage.removeItem('logged_user');
-      location.reload();
-    };
-
-    function loadUserBalance() {
-      if(!loggedUser) return;
-      db.ref('users/' + loggedUser + '/balance').on('value', function(snapshot) {
-        currentUserBalance = snapshot.val() || 0;
-        document.getElementById('userBalance').innerText = currentUserBalance.toFixed(2);
-      });
+/* =========================================================
+   FIREBASE INITIALIZATION
+   ========================================================= */
+function initializeFirebase() {
+  try {
+    if (!firebase.apps.length) {
+      firebase.initializeApp(firebaseConfig);
     }
 
-    document.getElementById('refreshBalanceBtn').onclick = loadUserBalance;
+    auth = firebase.auth();
+    db = firebase.database();
 
-    function switchNav(targetId, el) {
-      document.querySelectorAll('.view-section').forEach(function(s){ s.classList.remove('active'); });
-      document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('active'); });
-      document.getElementById(targetId).classList.add('active');
-      el.classList.add('active');
-    }
+    return true;
+  } catch (error) {
+    console.error("Firebase initialization error:", error);
+    setAuthStatus("Firebase চালু করা যায়নি।", true);
+    return false;
+  }
+}
 
-    function switchCat(cat, el) {
-      document.querySelectorAll('.cat-item').forEach(function(c){ c.classList.remove('active'); });
-      el.classList.add('active');
-      selectedCategory = cat;
-      renderGameGrid();
-    }
+/* =========================================================
+   AUTH
+   ========================================================= */
+async function registerUser() {
+  const email = $("regEmail").value.trim();
+  const password = $("regPassword").value;
 
-    function renderGameGrid() {
-      var gameGrid = document.getElementById('gameGrid');
-      gameGrid.innerHTML = '';
-      if(!allGames) return;
+  if (!email || !password) {
+    setAuthStatus("ইমেইল ও পাসওয়ার্ড দিন!", true);
+    return;
+  }
 
-      for (var id in allGames) {
-        (function(game) {
-          var category = game.category || 'hot';
-          if(selectedCategory !== 'hot' && category !== selectedCategory) return;
+  if (password.length < 6) {
+    setAuthStatus("পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে।", true);
+    return;
+  }
 
-          var card = document.createElement('div');
-          card.className = 'game-card';
-          card.onclick = function() { launchGame(game); };
-          var cover = game.coverUrl ? game.coverUrl : 'https://via.placeholder.com/100x90/1a1b22/ff8c00?text=GAME';
-          card.innerHTML = '<img src="' + cover + '"><div class="game-title">' + game.gameName + '</div>';
-          gameGrid.appendChild(card);
-        })(allGames[id]);
-      }
-    }
+  const button = $("registerBtn");
+  button.disabled = true;
+  setAuthStatus("একাউন্ট তৈরি হচ্ছে...");
 
-    function launchGame(game) {
-      document.getElementById('currentGameTitle').innerText = game.gameName;
-      var iframe = document.getElementById('gameIframe');
-      
-      var html = game.htmlCode || '';
-      var balanceScript = '<script>' +
-        'window.userBalance = ' + currentUserBalance + ';' +
-        'window.userId = "' + loggedUser + '";' +
-        'window.updateBalance = function(amount) {' +
-        '  window.parent.postMessage({ type: "UPDATE_BALANCE", amount: amount }, "*");' +
-        '};' +
-        '<\/script>';
+  try {
+    const credential =
+      await auth.createUserWithEmailAndPassword(email, password);
 
-      iframe.srcdoc = html.includes('<head>') ? html.replace('<head>', '<head>' + balanceScript) : balanceScript + html;
-      document.getElementById('gameLauncher').style.display = 'flex';
-    }
-
-    window.addEventListener('message', function(event) {
-      if (event.data && event.data.type === 'UPDATE_BALANCE' && loggedUser) {
-        var newBalance = parseFloat(event.data.amount);
-        if (!isNaN(newBalance)) {
-          db.ref('users/' + loggedUser).update({ balance: newBalance });
-        }
-      }
+    /*
+      User profile is stored by Firebase UID.
+      Password is NOT stored in Realtime Database.
+    */
+    await db.ref("users/" + credential.user.uid).set({
+      email: email,
+      balance: 0,
+      createdAt: firebase.database.ServerValue.TIMESTAMP
     });
 
-    document.getElementById('closeGameLauncherBtn').onclick = function() {
-      document.getElementById('gameLauncher').style.display = 'none';
-      document.getElementById('gameIframe').srcdoc = '';
-    };
+    setAuthStatus("একাউন্ট সফলভাবে তৈরি হয়েছে।");
+  } catch (error) {
+    console.error("Registration error:", error);
+    setAuthStatus(firebaseError(error), true);
+  } finally {
+    button.disabled = false;
+  }
+}
 
-    // Modals
-    document.getElementById('openDepositModalBtn').onclick = function(){ document.getElementById('depositModal').style.display = 'flex'; };
-    document.getElementById('closeDepositModalBtn').onclick = function(){ document.getElementById('depositModal').style.display = 'none'; };
-    document.getElementById('openWithdrawModalBtn').onclick = function(){ document.getElementById('withdrawModal').style.display = 'flex'; };
-    document.getElementById('closeWithdrawModalBtn').onclick = function(){ document.getElementById('withdrawModal').style.display = 'none'; };
+async function loginUser() {
+  const email = $("loginEmail").value.trim();
+  const password = $("loginPassword").value;
 
-    document.getElementById('submitDepositBtn').onclick = function() {
-      var amount = parseFloat(document.getElementById('depAmount').value);
-      var trx = document.getElementById('depTrx').value.trim();
-      if(!amount || !trx) return alert("তথ্য পূরণ করুন!");
+  if (!email || !password) {
+    setAuthStatus("ইমেইল ও পাসওয়ার্ড দিন!", true);
+    return;
+  }
 
-      db.ref('deposits').push({ userId: loggedUser, amount: amount, trxId: trx, status: 'pending', time: Date.now() })
-        .then(function() {
-          alert("ডিপোজিট রিকোয়েস্ট জমা হয়েছে!");
-          document.getElementById('depositModal').style.display = 'none';
-          document.getElementById('depAmount').value = '';
-          document.getElementById('depTrx').value = '';
-        });
-    };
+  const button = $("loginBtn");
+  button.disabled = true;
+  setAuthStatus("লগইন হচ্ছে...");
 
-    document.getElementById('submitWithdrawBtn').onclick = function() {
-      var amount = parseFloat(document.getElementById('witAmount').value);
-      var number = document.getElementById('witNumber').value.trim();
-      if(!amount || !number) return alert("তথ্য পূরণ করুন!");
-      if(amount > currentUserBalance) return alert("পর্যাপ্ত ব্যালেন্স নেই!");
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+    setAuthStatus("");
+  } catch (error) {
+    console.error("Login error:", error);
+    setAuthStatus(firebaseError(error), true);
+  } finally {
+    button.disabled = false;
+  }
+}
 
-      db.ref('withdrawals').push({ userId: loggedUser, amount: amount, number: number, status: 'pending', time: Date.now() })
-        .then(function() {
-          alert("উইথড্র রিকোয়েস্ট পাঠানো হয়েছে!");
-          document.getElementById('withdrawModal').style.display = 'none';
-          document.getElementById('witAmount').value = '';
-          document.getElementById('witNumber').value = '';
-        });
-    };
+async function logoutUser() {
+  try {
+    await auth.signOut();
+  } catch (error) {
+    console.error("Logout error:", error);
+    alert(firebaseError(error));
+  }
+}
 
-    // Chat
-    document.getElementById('sendChatBtn').onclick = function() {
-      var text = document.getElementById('chatInput').value.trim();
-      if(!text) return;
-      db.ref('chats/' + loggedUser).push({ sender: 'user', message: text, time: Date.now() })
-        .then(function() { document.getElementById('chatInput').value = ''; });
-    };
+/* =========================================================
+   APP OPEN/CLOSE
+   ========================================================= */
+function openMainApp(user) {
+  currentUser = user;
 
-    function listenUserChats() {
-      db.ref('chats/' + loggedUser).on('value', function(snapshot) {
-        var chatBox = document.getElementById('chatBox');
-        chatBox.innerHTML = '';
-        var data = snapshot.val();
-        if(!data) { chatBox.innerHTML = '<div class="chat-msg admin">হ্যালো! কীভাবে সাহায্য করতে পারি?</div>'; return; }
-        for(var key in data) {
-          var msg = data[key];
-          chatBox.innerHTML += '<div class="chat-msg ' + (msg.sender === 'user' ? 'user' : 'admin') + '">' + msg.message + '</div>';
-        }
-        chatBox.scrollTop = chatBox.scrollHeight;
-      });
+  hide($("authScreen"));
+  show($("mainAppContent"));
+
+  $("profileUserId").textContent = user.uid;
+  $("profileEmail").textContent = user.email || "";
+
+  loadSettings();
+  loadGames();
+  loadUserBalance();
+  listenUserChat();
+}
+
+function closeMainApp() {
+  currentUser = null;
+  currentUserBalance = 0;
+
+  if (balanceListener) {
+    db.ref(balanceListener).off();
+    balanceListener = null;
+  }
+
+  if (settingsListener) {
+    db.ref("settings").off("value", settingsListener);
+    settingsListener = null;
+  }
+
+  if (gamesListener) {
+    db.ref("games").off("value", gamesListener);
+    gamesListener = null;
+  }
+
+  if (chatListener) {
+    db.ref("chats").off("value", chatListener);
+    chatListener = null;
+  }
+
+  hide($("mainAppContent"));
+  show($("authScreen"), "flex");
+}
+
+/* =========================================================
+   SETTINGS
+   ========================================================= */
+function loadSettings() {
+  if (!db) return;
+
+  if (settingsListener) {
+    db.ref("settings").off("value", settingsListener);
+  }
+
+  settingsListener = snapshot => {
+    const data = snapshot.val() || {};
+
+    if (data.siteTitle) {
+      $("siteTitle").textContent = data.siteTitle;
+      $("authLogoText").textContent = data.siteTitle;
+      document.title = data.siteTitle;
     }
-  </script>
+
+    if (data.bannerUrl) {
+      $("mainBanner").src = data.bannerUrl;
+    } else {
+      $("mainBanner").src =
+        "data:image/svg+xml;charset=UTF-8," +
+        encodeURIComponent(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="350">' +
+          '<rect width="100%" height="100%" fill="#222"/>' +
+          '<text x="50%" y="50%" fill="#ff8c00" font-size="42" text-anchor="middle">CV999</text>' +
+          '</svg>'
+        );
+    }
+  };
+
+  db.ref("settings").on("value", settingsListener);
+}
+
+/* =========================================================
+   GAMES
+   ========================================================= */
+function loadGames() {
+  if (!db) return;
+
+  if (gamesListener) {
+    db.ref("games").off("value", gamesListener);
+  }
+
+  gamesListener = snapshot => {
+    allGames = snapshot.val() || {};
+    renderGameGrid();
+  };
+
+  db.ref("games").on("value", gamesListener, error => {
+    console.error("Games listener error:", error);
+  });
+}
+
+function renderGameGrid() {
+  const grid = $("gameGrid");
+  grid.innerHTML = "";
+
+  const ids = Object.keys(allGames);
+
+  ids.forEach(id => {
+    const game = allGames[id] || {};
+    const category = game.category || "hot";
+
+    if (
+      selectedCategory !== "hot" &&
+      category !== selectedCategory
+    ) {
+      return;
+    }
+
+    const card = document.createElement("div");
+    card.className = "game-card";
+
+    const cover =
+      game.coverUrl ||
+      "https://via.placeholder.com/500x300/1a1b22/ff8c00?text=GAME";
+
+    card.innerHTML =
+      '<img src="' + escapeHTML(cover) + '" alt="">' +
+      '<div class="game-title">' +
+      escapeHTML(game.gameName || "Game") +
+      "</div>";
+
+    card.addEventListener("click", () => launchGame(game));
+
+    grid.appendChild(card);
+  });
+
+  if (!grid.children.length) {
+    grid.innerHTML =
+      '<div class="empty">এখন কোনো গেম পাওয়া যায়নি।</div>';
+  }
+}
+
+/* =========================================================
+   BALANCE
+   ========================================================= */
+function loadUserBalance() {
+  if (!currentUser || !db) return;
+
+  const path = "users/" + currentUser.uid + "/balance";
+
+  if (balanceListener) {
+    db.ref(balanceListener).off();
+  }
+
+  balanceListener = path;
+
+  db.ref(path).on(
+    "value",
+    snapshot => {
+      currentUserBalance = Number(snapshot.val() || 0);
+
+      $("userBalance").textContent =
+        currentUserBalance.toFixed(2);
+
+      $("profileBalance").textContent =
+        currentUserBalance.toFixed(2);
+    },
+    error => {
+      console.error("Balance listener error:", error);
+    }
+  );
+}
+
+/* =========================================================
+   NAVIGATION
+   ========================================================= */
+function switchView(viewId, element) {
+  document
+    .querySelectorAll(".view-section")
+    .forEach(section => section.classList.remove("active"));
+
+  document
+    .querySelectorAll(".nav-item")
+    .forEach(item => item.classList.remove("active"));
+
+  $(viewId).classList.add("active");
+  element.classList.add("active");
+}
+
+function switchCategory(category, element) {
+  document
+    .querySelectorAll(".cat-item")
+    .forEach(item => item.classList.remove("active"));
+
+  element.classList.add("active");
+
+  selectedCategory = category;
+  renderGameGrid();
+}
+
+/* =========================================================
+   GAME LAUNCHER
+   ========================================================= */
+function launchGame(game) {
+  if (!currentUser) return;
+
+  $("currentGameTitle").textContent =
+    game.gameName || "Game";
+
+  const html = game.htmlCode || `
+    <html>
+      <body style="font-family:Arial;text-align:center;padding:40px">
+        <h2>Game code পাওয়া যায়নি</h2>
+      </body>
+    </html>
+  `;
+
+  const bridge =
+    "<script>" +
+    "window.userBalance=" +
+    JSON.stringify(currentUserBalance) +
+    ";" +
+    "window.userId=" +
+    JSON.stringify(currentUser.uid) +
+    ";" +
+    "window.updateBalance=function(amount){" +
+    "window.parent.postMessage({type:'UPDATE_BALANCE',amount:Number(amount)},'*')" +
+    "};" +
+    "<\/script>";
+
+  $("gameIframe").srcdoc =
+    html.includes("<head>")
+      ? html.replace("<head>", "<head>" + bridge)
+      : bridge + html;
+
+  show($("gameLauncher"), "flex");
+}
+
+function closeGameLauncher() {
+  hide($("gameLauncher"));
+  $("gameIframe").srcdoc = "";
+}
+
+/* =========================================================
+   CHAT
+   ========================================================= */
+function listenUserChat() {
+  if (!currentUser || !db) return;
+
+  if (chatListener) {
+    db.ref("chats/" + currentUser.uid).off("value", chatListener);
+  }
+
+  chatListener = snapshot => {
+    const box = $("chatMessages");
+    box.innerHTML = "";
+
+    snapshot.forEach(child => {
+      const data = child.val() || {};
+      const div = document.createElement("div");
+
+      div.className = "chat-message";
+      div.innerHTML =
+        "<b>" +
+        escapeHTML(data.user || currentUser.email || "User") +
+        "</b><br>" +
+        escapeHTML(data.message || "");
+
+      box.appendChild(div);
+    });
+
+    box.scrollTop = box.scrollHeight;
+  };
+
+  db.ref("chats/" + currentUser.uid)
+    .limitToLast(100)
+    .on("value", chatListener);
+}
+
+async function sendChat() {
+  if (!currentUser) return;
+
+  const input = $("chatInput");
+  const message = input.value.trim();
+
+  if (!message) return;
+
+  input.value = "";
+
+  try {
+    await db.ref("chats/" + currentUser.uid).push({
+      user: currentUser.email || currentUser.uid,
+      message: message,
+      timestamp: firebase.database.ServerValue.TIMESTAMP
+    });
+  } catch (error) {
+    console.error("Chat error:", error);
+    alert(firebaseError(error));
+  }
+}
+
+/* =========================================================
+   DEPOSIT / WITHDRAW REQUESTS
+   ========================================================= */
+async function submitDeposit() {
+  if (!currentUser) return;
+
+  const amount = Number($("depositAmount").value);
+  const reference = $("depositRef").value.trim();
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    alert("সঠিক পরিমাণ দিন।");
+    return;
+  }
+
+  try {
+    await db.ref("deposits").push({
+      uid: currentUser.uid,
+      email: currentUser.email || "",
+      amount: amount,
+      reference: reference,
+      status: "pending",
+      timestamp: firebase.database.ServerValue.TIMESTAMP
+    });
+
+    alert("ডিপোজিট রিকোয়েস্ট পাঠানো হয়েছে।");
+
+    $("depositAmount").value = "";
+    $("depositRef").value = "";
+
+    closeModals();
+  } catch (error) {
+    console.error("Deposit request error:", error);
+    alert(firebaseError(error));
+  }
+}
+
+async function submitWithdraw() {
+  if (!currentUser) return;
+
+  const amount = Number($("withdrawAmount").value);
+  const method = $("withdrawMethod").value.trim();
+
+  if (!Number.isFinite(amount) || amount <= 0) {
+    alert("সঠিক পরিমাণ দিন।");
+    return;
+  }
+
+  if (amount > currentUserBalance) {
+    alert("পর্যাপ্ত ব্যালেন্স নেই।");
+    return;
+  }
+
+  try {
+    await db.ref("withdrawals").push({
+      uid: currentUser.uid,
+      email: currentUser.email || "",
+      amount: amount,
+      method: method,
+      status: "pending",
+      timestamp: firebase.database.ServerValue.TIMESTAMP
+    });
+
+    alert("উইথড্র রিকোয়েস্ট পাঠানো হয়েছে।");
+
+    $("withdrawAmount").value = "";
+    $("withdrawMethod").value = "";
+
+    closeModals();
+  } catch (error) {
+    console.error("Withdraw request error:", error);
+    alert(firebaseError(error));
+  }
+}
+
+function closeModals() {
+  document.querySelectorAll(".modal").forEach(modal => hide(modal));
+}
+
+/* =========================================================
+   GAME MESSAGE BRIDGE
+   ========================================================= */
+window.addEventListener("message", event => {
+  if (!currentUser) return;
+  if (!event.data || event.data.type !== "UPDATE_BALANCE") return;
+
+  const amount = Number(event.data.amount);
+
+  if (!Number.isFinite(amount) || amount < 0) return;
+
+  /*
+    IMPORTANT:
+    Production balance changes should be validated/enforced
+    server-side with secure Firebase Rules/Cloud Functions.
+  */
+  db.ref("users/" + currentUser.uid + "/balance")
+    .set(amount)
+    .catch(error => console.error("Balance update error:", error));
+});
+
+/* =========================================================
+   EVENT BINDINGS
+   ========================================================= */
+document.addEventListener("DOMContentLoaded", () => {
+
+  $("loginTabBtn").addEventListener("click", () => {
+    $("loginTabBtn").classList.add("active");
+    $("registerTabBtn").classList.remove("active");
+
+    $("loginForm").classList.remove("hidden");
+    $("registerForm").classList.add("hidden");
+
+    setAuthStatus("");
+  });
+
+  $("registerTabBtn").addEventListener("click", () => {
+    $("registerTabBtn").classList.add("active");
+    $("loginTabBtn").classList.remove("active");
+
+    $("registerForm").classList.remove("hidden");
+    $("loginForm").classList.add("hidden");
+
+    setAuthStatus("");
+  });
+
+  $("loginBtn").addEventListener("click", loginUser);
+  $("registerBtn").addEventListener("click", registerUser);
+  $("logoutBtn").addEventListener("click", logoutUser);
+
+  $("loginPassword").addEventListener("keydown", event => {
+    if (event.key === "Enter") loginUser();
+  });
+
+  $("regPassword").addEventListener("keydown", event => {
+    if (event.key === "Enter") registerUser();
+  });
+
+  $("refreshBalanceBtn").addEventListener("click", loadUserBalance);
+
+  $("depositBtn").addEventListener("click", () => {
+    show($("depositModal"), "flex");
+  });
+
+  $("withdrawBtn").addEventListener("click", () => {
+    show($("withdrawModal"), "flex");
+  });
+
+  $("submitDeposit").addEventListener("click", submitDeposit);
+  $("submitWithdraw").addEventListener("click", submitWithdraw);
+
+  document
+    .querySelectorAll(".closeModal")
+    .forEach(button => button.addEventListener("click", closeModals));
+
+  document
+    .querySelectorAll(".nav-item")
+    .forEach(item => {
+      item.addEventListener("click", () =>
+        switchView(item.dataset.view, item)
+      );
+    });
+
+  document
+    .querySelectorAll(".cat-item")
+    .forEach(item => {
+      item.addEventListener("click", () =>
+        switchCategory(item.dataset.cat, item)
+      );
+    });
+
+  $("sendChatBtn").addEventListener("click", sendChat);
+
+  $("chatInput").addEventListener("keydown", event => {
+    if (event.key === "Enter") sendChat();
+  });
+
+  $("closeGameLauncherBtn").addEventListener(
+    "click",
+    closeGameLauncher
+  );
+
+  /*
+    Initialize Firebase before registering auth state listener.
+  */
+  if (!initializeFirebase()) return;
+
+  /*
+    This is the important authentication fix:
+    the app now follows Firebase Auth state instead of
+    using localStorage + plaintext passwords in RTDB.
+  */
+  auth.onAuthStateChanged(
+    user => {
+      if (user) {
+        openMainApp(user);
+      } else {
+        closeMainApp();
+      }
+    },
+    error => {
+      console.error("Auth state error:", error);
+      setAuthStatus(firebaseError(error), true);
+    }
+  );
+});
+</script>
+
 </body>
 </html>
